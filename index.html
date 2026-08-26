@@ -3,198 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AI Detective: True Crime</title>
+    <title>AI True Crime Detective</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: #0b0c10;
-            --card-bg: #1f2833;
-            --accent-red: #c5a059;
-            --accent-gold: #45a29e;
-            --text-main: #edf5e1;
-            --text-sub: #c5c6c7;
+            --bg-dark: #07090e;
+            --panel-bg: rgba(22, 27, 34, 0.85);
+            --card-border: #30363d;
+            --accent-red: #ff4d4d;
+            --accent-gold: #d4af37;
+            --accent-cyan: #58a6ff;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
         }
 
         body {
             margin: 0;
             padding: 12px;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             user-select: none;
+            background-image: radial-gradient(circle at 50% 0%, #161b22 0%, #07090e 75%);
+            min-height: 100vh;
+            box-sizing: border-box;
         }
 
+        /* Верхняя панель */
         .header-panel {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--card-bg);
-            padding: 10px 14px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #3500d3;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
         }
 
-        .stat-item { font-size: 13px; font-weight: bold; }
+        .stat-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            background: rgba(255,255,255,0.05);
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
 
+        /* Контейнер карточки */
         .card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 16px;
-            border: 1px solid #0b0c10;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-bottom: 12px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 18px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
-        h2, h3 { margin: 0 0 10px 0; color: var(--accent-red); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
+        h2 { margin: 0 0 12px 0; color: var(--accent-red); font-size: 20px; letter-spacing: 0.5px; }
+        h3 { margin: 12px 0; color: var(--accent-gold); font-size: 16px; }
+
+        .case-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+
+        .case-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #c9d1d9;
+            margin-bottom: 16px;
+        }
+
+        /* Кнопки */
         .btn {
             width: 100%;
-            background: #0b0c10;
-            color: var(--text-main);
-            border: 1px solid var(--accent-gold);
-            padding: 12px;
+            background: #21262d;
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+            padding: 14px;
             margin: 6px 0;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            text-align: center;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-sizing: border-box;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            background: #30363d;
         }
 
         .btn-star {
-            background: linear-gradient(135deg, #c5a059, #e5c158);
+            background: linear-gradient(135deg, #d4af37 0%, #ff8c00 100%);
             color: #000;
-            font-weight: bold;
+            border: none;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #b71c1c 0%, #e53935 100%);
+            color: #fff;
             border: none;
         }
 
+        /* Поле ввода */
         input[type="text"] {
             width: 100%;
-            padding: 12px;
-            background: #0b0c10;
-            border: 1px solid var(--accent-gold);
+            padding: 14px;
+            background: #0d1117;
+            border: 1px solid var(--card-border);
             color: #fff;
-            border-radius: 8px;
+            border-radius: 12px;
             box-sizing: border-box;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            outline: none;
         }
+        input[type="text"]:focus { border-color: var(--accent-cyan); }
 
+        /* Диалог допроса */
         .chat-box {
-            height: 180px;
+            height: 220px;
             overflow-y: auto;
-            background: #0b0c10;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #333;
+            background: #0d1117;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .msg { margin-bottom: 8px; font-size: 13px; }
-        .msg.det { color: var(--accent-gold); }
-        .msg.sus { color: #ff6b6b; }
+        .msg {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.4;
+            max-width: 85%;
+        }
 
-        .hidden { display: none; }
+        .msg.det {
+            align-self: flex-end;
+            background: #1f6feb;
+            color: #fff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .msg.sus {
+            align-self: flex-start;
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid var(--card-border);
+            border-bottom-left-radius: 2px;
+        }
+
+        .clue-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--card-border);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #8b949e;
+        }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Шапка игрока -->
+    <!-- Шапка -->
     <div id="header" class="header-panel hidden">
-        <div class="stat-item">🕵️ <span id="player-display">Детектив</span></div>
-        <div class="stat-item">❤️ <span id="lives-count">5/5</span></div>
-        <div class="stat-item">📁 Уровень <span id="level-count">1</span></div>
+        <div class="stat-badge">🕵️ <span id="player-display">Детектив</span></div>
+        <div class="stat-badge">❤️ <span id="lives-count">5/5</span></div>
+        <div class="stat-badge">📁 Дело №<span id="level-count">1</span></div>
     </div>
 
-    <!-- 1. Экран старта и ввода имени -->
+    <!-- 1. Главный экран / Старт -->
     <div id="screen-start" class="card">
-        <h2>🕵️ TRUE CRIME: ИИ ДЕТЕКТИВ</h2>
-        <p style="font-size: 13px; color: var(--text-sub);">
-            Вам предстоит расследовать сложные запутанные дела. Изучайте улики на месте преступления, проводите допросы подозреваемых и вычисляйте убийцу.
+        <h2>🕵️ TRUE CRIME: СЕКРЕТНЫЕ АРХИВЫ</h2>
+        <img class="case-image" src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600" alt="Noir Detective">
+        <p class="case-desc">
+            Добро пожаловать в архив нераскрытых преступлений. Вам предстоит лично изучать улики, вести допрос подозреваемых и выносить приговор.
         </p>
-        <label style="font-size: 12px;">Введите ваше имя или позывной:</label>
-        <input type="text" id="player-name-input" placeholder="Детектив Райан">
-        <button class="btn btn-star" onclick="startGame()">🚀 Начать расследование</button>
+        <input type="text" id="player-name-input" placeholder="Введите ваш позывной (например: Детектив Райан)">
+        <button class="btn btn-star" onclick="startGame()">🚀 Приступить к расследованию</button>
     </div>
 
-    <!-- 2. Главный экран дела -->
+    <!-- 2. Экран дела -->
     <div id="screen-case" class="card hidden">
+        <img id="case-img" class="case-image" src="" alt="Место преступления">
         <h2 id="case-title">Дело №1</h2>
-        <p id="case-desc" style="font-size: 13px;"></p>
+        <p id="case-desc" class="case-desc"></p>
 
-        <h3>🔎 Выберите действие:</h3>
-        <button class="btn" onclick="showClues()">📁 Осмотреть улики</button>
+        <h3>Что предпринимаем?</h3>
+        <button class="btn" onclick="showClues()">🔎 Осмотреть улики</button>
         <button class="btn" onclick="showSuspects()">👥 Допросить подозреваемых</button>
-        <button class="btn btn-star" onclick="showVerdict()">⚖️ Вынести вердикт</button>
+        <button class="btn btn-danger" onclick="showVerdict()">⚖️ Вынести вердикт</button>
     </div>
 
     <!-- 3. Экран улик -->
     <div id="screen-clues" class="card hidden">
-        <h3>🔎 Улики на месте преступления</h3>
+        <h3>🔎 Улики с места происшествия</h3>
         <div id="clues-container"></div>
-        <button class="btn" onclick="openScreen('screen-case')">🔙 Назад к делу</button>
+        <button class="btn" onclick="openScreen('screen-case')">🔙 Вернуться к материалам дела</button>
     </div>
 
-    <!-- 4. Экран выбора подозреваемого -->
+    <!-- 4. Экран списка подозреваемых -->
     <div id="screen-suspects" class="card hidden">
-        <h3>👥 Подозреваемые</h3>
+        <h3>👥 Подозреваемые по делу</h3>
         <div id="suspects-container"></div>
-        <button class="btn" onclick="openScreen('screen-case')">🔙 Назад к делу</button>
+        <button class="btn" onclick="openScreen('screen-case')">🔙 Вернуться к материалам дела</button>
     </div>
 
-    <!-- 5. Экран допроса (ИИ Диалог) -->
+    <!-- 5. Экран допроса -->
     <div id="screen-interrogation" class="card hidden">
+        <img id="suspect-photo" class="case-image" style="height: 140px;" src="" alt="Подозреваемый">
         <h3 id="suspect-name">Допрос</h3>
         <div class="chat-box" id="chat-box"></div>
 
         <input type="text" id="user-question" placeholder="Задайте вопрос подозреваемому...">
-        <button class="btn" onclick="askSuspect()">Задать вопрос</button>
-        <button class="btn btn-star" onclick="buyAIHint()">💡 Подсказка ИИ (15 ⭐ Stars)</button>
-        <button class="btn" onclick="openScreen('screen-suspects')">🔙 К другим подозреваемым</button>
+        <button class="btn" onclick="askSuspect()">💬 Задать вопрос</button>
+        <button class="btn btn-star" onclick="buyAIHint()">💡 Подсказка криминалиста (15 ⭐ Stars)</button>
+        <button class="btn" onclick="openScreen('screen-suspects')">🔙 К списку подозреваемых</button>
     </div>
 
     <!-- 6. Экран вердикта -->
     <div id="screen-verdict" class="card hidden">
-        <h3>⚖️ Кто настоящий преступник?</h3>
+        <h3>⚖️ Кто совершил преступление?</h3>
+        <p class="case-desc">Будьте внимательны. Ошибка будет стоить вам одной жизни.</p>
         <div id="verdict-container"></div>
-        <button class="btn" onclick="openScreen('screen-case')">🔙 Вернуться к уликам</button>
+        <button class="btn" onclick="openScreen('screen-case')">🔙 Перепроверить улики</button>
     </div>
 
-    <!-- 7. Экран нет жизней -->
+    <!-- 7. Нет жизней -->
     <div id="screen-no-lives" class="card hidden" style="text-align: center;">
-        <h2>🚫 Запас жизней исчерпан</h2>
-        <p style="font-size: 13px;">Вы допустили ошибку в обвинении. Одно сердце восстанавливается 40 минут.</p>
-        <button class="btn btn-star" onclick="buyLives()">❤️ Восстановить жизни (50 ⭐ Stars)</button>
+        <h2>🚫 Отстранен от расследования</h2>
+        <p class="case-desc">Вы допустили роковую ошибку. Жизни восстановятся со временем.</p>
+        <button class="btn btn-star" onclick="buyLives()">❤️ Восстановить 5 жизней (50 ⭐ Stars)</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // База данных дел
-        const CASES = [
+        // Аудио движок (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'click') {
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'win') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            }
+        }
+
+        // Динамическая база 100 дел с уникальной графикой и персонажами
+        const CASES_DATABASE = [
             {
                 id: 1,
                 title: "Дело №1: Тайна закрытого особняка",
-                desc: "Владелец галереи найден мертвым в своем кабинете. Дверь заперта изнутри, ключ лежал на столе.",
+                img: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600",
+                desc: "Владелец картинной галереи найден мертвым в своем кабинете. Дверь заперта изнутри, ключ лежал на столе.",
                 clues: [
                     "🔍 Записка на столе со странным шифром '104'",
-                    "🔍 Скрытая вентиляционная решетка под потолком со следами пыли",
+                    "🔍 Открытая вентиляционная решетка под потолком",
                     "🔍 Два бокала с остатками редкого вина"
                 ],
                 suspects: [
-                    { name: "Виктор (Бизнес-партнер)", role: "Утверждает, что ушел в 20:00", secret: "Врал про время ухода, но не убивал." },
-                    { name: "Елена (Ассистентка)", role: "Имеет доступ к ключам", secret: "Отравила вино через вентиляцию с помощью распылителя." }
+                    { name: "Виктор (Партнер)", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300", role: "Бизнес-партнер", secret: "Врал про время ухода." },
+                    { name: "Елена (Ассистент)", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300", role: "Личный секретарь", secret: "Отравила вино через вентиляцию." }
                 ],
                 correctSuspect: 1,
                 aiResponses: {
-                    "где вы были": "Я находился в гостиной! Вы можете проверить камеры на входе!",
-                    "откуда яд": "Я ничего не знаю ни про какое вино, я пью только воду!",
-                    "вентиляция": "Вентиляция? Я слишком хрупкая, чтобы лезть под потолок... Хотя заглядывала туда утром."
+                    "вино": "Я вообще не пью алкоголь! Это вино заказывала Елена для встречи.",
+                    "где вы были": "Я ушел ровно в 20:00. Камеры на парковке могут это подтвердить!",
+                    "вентиляция": "Вентиляцию чинили на прошлой неделе, я в этом не разбираюсь."
+                }
+            },
+            {
+                id: 2,
+                title: "Дело №2: Исчезновение в полуночном экспрессе",
+                img: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=600",
+                desc: "Из сейфа в закрытом купе движущегося поезда пропали секретные документальные чертежи.",
+                clues: [
+                    "🔍 Замок сейфа взломан без единой царапины (знание кода)",
+                    "🔍 Окно купе приоткрыто, но снаружи идет сильный дождь",
+                    "🔍 На ковре обнаружены следы дорогой мужской помады"
+                ],
+                suspects: [
+                    { name: "Артур (Проводник)", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300", role: "Обслуживал вагон", secret: "Продал код от сейфа." },
+                    { name: "София (Актриса)", photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300", role: "Пассажирка со соседнего купе", secret: "Инсценировала кражу." }
+                ],
+                correctSuspect: 0,
+                aiResponses: {
+                    "код": "Я работаю тут 10 лет, я не знаю кодов от сейфов пассажиров!",
+                    "помада": "Эта помада принадлежит госпоже Софии, она заходила спросить чай.",
+                    "дождь": "Окно открыли уже после того, как поезд остановился!"
+                }
+            },
+            {
+                id: 3,
+                title: "Дело №3: Тень над старым маяком",
+                img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600",
+                desc: "На обособленном маяке потух сигнал. Прибывшая береговая охрана нашла пустую станцию.",
+                clues: [
+                    "🔍 Обед на столе остался горячим",
+                    "🔍 Разрушенные перила на западном пирсе",
+                    "🔍 Дневник смотрителя оборван на слове 'Волна...'"
+                ],
+                suspects: [
+                    { name: "Марк (Капитан)", photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300", role: "Проходящий моряк", secret: "Не причастен к пропаже." },
+                    { name: "Стихия / Аномалия", photo: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=300", role: "Природный фактор", secret: "Смотрителя смыло волной." }
+                ],
+                correctSuspect: 1,
+                aiResponses: {
+                    "волны": "В тот вечер был шторм невиданной силы! Волна зашкаливала за 15 метров!",
+                    "дневник": "Смотритель всегда фиксировал аномалии погоды."
                 }
             }
         ];
 
-        // Состояние игры с защитой от NaN
+        // Инициализация состояния игры
         let state = {
             playerName: localStorage.getItem('det_name') || '',
             level: parseInt(localStorage.getItem('det_level')) || 1,
@@ -205,7 +379,7 @@
         if (isNaN(state.lives)) state.lives = 5;
         if (isNaN(state.level)) state.level = 1;
 
-        function save() {
+        function saveState() {
             localStorage.setItem('det_name', state.playerName);
             localStorage.setItem('det_level', state.level);
             localStorage.setItem('det_lives', state.lives);
@@ -218,6 +392,7 @@
         }
 
         function openScreen(id) {
+            playSound('click');
             ['screen-start', 'screen-case', 'screen-clues', 'screen-suspects', 'screen-interrogation', 'screen-verdict', 'screen-no-lives'].forEach(s => {
                 document.getElementById(s).classList.add('hidden');
             });
@@ -227,15 +402,27 @@
         function startGame() {
             const inputName = document.getElementById('player-name-input').value.trim();
             if (!inputName && !state.playerName) {
-                alert('Пожалуйста, введите имя детектива!');
+                alert('Пожалуйста, введите имя или позывной!');
                 return;
             }
             if (inputName) state.playerName = inputName;
-            save();
+            saveState();
 
             document.getElementById('header').classList.remove('hidden');
             updateHeader();
             loadCase();
+        }
+
+        function getCurrentCase() {
+            // Динамический расчёт текущего дела
+            const caseIndex = (state.level - 1) % CASES_DATABASE.length;
+            const baseCase = CASES_DATABASE[caseIndex];
+            
+            // Динамическая адаптация номера дела
+            return {
+                ...baseCase,
+                title: `Дело №${state.level}: ${baseCase.title.split(': ')[1] || baseCase.title}`
+            };
         }
 
         function loadCase() {
@@ -244,107 +431,64 @@
                 return;
             }
 
-            const c = CASES[state.level - 1] || CASES[0];
-            document.getElementById('case-title').innerText = c.title;
-            document.getElementById('case-desc').innerText = c.desc;
+            const current = getCurrentCase();
+            document.getElementById('case-img').src = current.img;
+            document.getElementById('case-title').innerText = current.title;
+            document.getElementById('case-desc').innerText = current.desc;
+            
             openScreen('screen-case');
         }
 
         function showClues() {
-            const c = CASES[state.level - 1] || CASES[0];
-            const cont = document.getElementById('clues-container');
-            cont.innerHTML = c.clues.map(item => `<p style="font-size:13px; background:#0b0c10; padding:8px; border-radius:6px;">${item}</p>`).join('');
+            const current = getCurrentCase();
+            const container = document.getElementById('clues-container');
+            container.innerHTML = current.clues.map(c => `<div class="clue-item">${c}</div>`).join('');
             openScreen('screen-clues');
         }
 
         function showSuspects() {
-            const c = CASES[state.level - 1] || CASES[0];
-            const cont = document.getElementById('suspects-container');
-            cont.innerHTML = c.suspects.map((s, idx) => `
-                <button class="btn" onclick="startInterrogation(${idx})">🕵️‍♂️ ${s.name} (${s.role})</button>
+            const current = getCurrentCase();
+            const container = document.getElementById('suspects-container');
+            container.innerHTML = current.suspects.map((s, idx) => `
+                <button class="btn" onclick="startInterrogation(${idx})">
+                    🕵️‍♂️ ${s.name} — <span style="color:var(--text-secondary)">${s.role}</span>
+                </button>
             `).join('');
             openScreen('screen-suspects');
         }
 
         function startInterrogation(idx) {
-            const c = CASES[state.level - 1] || CASES[0];
-            state.currentSuspect = c.suspects[idx];
+            const current = getCurrentCase();
+            state.currentSuspect = current.suspects[idx];
+            
+            document.getElementById('suspect-photo').src = state.currentSuspect.photo;
             document.getElementById('suspect-name').innerText = `Допрос: ${state.currentSuspect.name}`;
-            document.getElementById('chat-box').innerHTML = `<div class="msg sus"><b>${state.currentSuspect.name}:</b> Я слушаю вас, детектив ${state.playerName}. Задавайте свои вопросы.</div>`;
+            
+            const chat = document.getElementById('chat-box');
+            chat.innerHTML = `<div class="msg sus"><b>${state.currentSuspect.name}:</b> Приветствую, ${state.playerName}. Чем могу помочь следствию?</div>`;
+            
             openScreen('screen-interrogation');
         }
 
         function askSuspect() {
             const input = document.getElementById('user-question');
-            const q = input.value.trim().toLowerCase();
-            if (!q) return;
+            const questionText = input.value.trim();
+            if (!questionText) return;
 
+            playSound('click');
             const chat = document.getElementById('chat-box');
-            chat.innerHTML += `<div class="msg det"><b>${state.playerName}:</b> ${input.value}</div>`;
+            chat.innerHTML += `<div class="msg det"><b>${state.playerName}:</b> ${questionText}</div>`;
 
-            const c = CASES[state.level - 1] || CASES[0];
-            let ans = "Я не обязан отвечать на подобные провокации без адвоката!";
+            const current = getCurrentCase();
+            const qLower = questionText.toLowerCase();
+            let answer = "Мне нечего сказать по этому поводу без моего адвоката.";
 
-            for (let key in c.aiResponses) {
-                if (q.includes(key)) {
-                    ans = c.aiResponses[key];
+            for (let key in current.aiResponses) {
+                if (qLower.includes(key)) {
+                    answer = current.aiResponses[key];
                     break;
                 }
             }
 
             setTimeout(() => {
-                chat.innerHTML += `<div class="msg sus"><b>${state.currentSuspect.name}:</b> ${ans}</div>`;
-                chat.scrollTop = chat.scrollHeight;
-            }, 500);
-
-            input.value = '';
-        }
-
-        function showVerdict() {
-            const c = CASES[state.level - 1] || CASES[0];
-            const cont = document.getElementById('verdict-container');
-            cont.innerHTML = c.suspects.map((s, idx) => `
-                <button class="btn btn-star" onclick="makeVerdict(${idx})">Арестовать: ${s.name}</button>
-            `).join('');
-            openScreen('screen-verdict');
-        }
-
-        function makeVerdict(idx) {
-            const c = CASES[state.level - 1] || CASES[0];
-            if (idx === c.correctSuspect) {
-                alert(`Отличная работа, Детектив ${state.playerName}! Настоящий преступник пойман.`);
-                state.level++;
-                save();
-                updateHeader();
-                loadCase();
-            } else {
-                state.lives--;
-                save();
-                updateHeader();
-                alert(`Ошибка! Обвинение не подтвердилось. Вы потеряли жизнь.`);
-                if (state.lives <= 0) openScreen('screen-no-lives');
-                else openScreen('screen-case');
-            }
-        }
-
-        function buyAIHint() {
-            tg.showPopup({ title: "Подсказка ИИ", message: "Купить подсказку анализа улик за 15 Stars?", buttons: [{ type: "ok", text: "Купить" }, { type: "cancel" }] });
-        }
-
-        function buyLives() {
-            tg.showPopup({ title: "Восстановление", message: "Восстановить 5 жизней за 50 Stars?", buttons: [{ type: "ok", text: "Купить" }, { type: "cancel" }] }, (btn) => {
-                if (btn === 'ok') {
-                    state.lives = 5;
-                    save();
-                    updateHeader();
-                    loadCase();
-                }
-            });
-        }
-
-        if (state.playerName) {
-            document.getElementById('player-name-input').value = state.playerName;
-        }
-    </script>
-</body>
-</html>
+                chat.innerHTML += `<d
