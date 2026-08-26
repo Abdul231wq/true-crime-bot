@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Детектив: Нераскрытые Дела</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0d0f12;
+            --card-bg: #181b20;
+            --accent-red: #e53935;
+            --accent-gold: #ffb300;
+            --text-main: #f1f1f1;
+            --text-sub: #a0a0a0;
+        }
+
+        body {
+            margin: 0;
+            padding: 15px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+        }
+
+        /* Шапка: Жизни, Уровень, Stars */
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 10px 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 15px;
+            border: 1px solid #2a2e35;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Карточка расследования */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #2a2e35;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+        }
+
+        .case-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #333;
+        }
+
+        h2 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: var(--accent-red);
+        }
+
+        .case-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #d1d1d1;
+            margin-bottom: 15px;
+        }
+
+        /* Варианты ответов */
+        .btn {
+            width: 100%;
+            background: #23272e;
+            color: var(--text-main);
+            border: 1px solid #3a3f47;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:active { background: #323842; }
+
+        /* Кнопка подсказки и покупок */
+        .btn-star {
+            background: linear-gradient(135deg, #ffb300, #ff8f00);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(255,179,0,0.3);
+        }
+
+        .disclaimer {
+            font-size: 11px;
+            color: var(--text-sub);
+            text-align: center;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Панель статуса -->
+    <div class="header-panel">
+        <div class="stat-item">
+            <span>❤️</span>
+            <span id="lives-count">5/5</span>
+            <span id="timer" style="font-size: 11px; color: var(--text-sub);"></span>
+        </div>
+        <div class="stat-item">
+            <span>📁 Уровень</span>
+            <span id="level-indicator">1/100</span>
+        </div>
+    </div>
+
+    <!-- Основной игровой экран -->
+    <div id="game-screen" class="card">
+        <img id="case-img" class="case-image" src="" alt="Дело">
+        <h2 id="case-title">Название дела</h2>
+        <div id="case-description" class="case-text">Описание...</div>
+
+        <!-- Подсказка -->
+        <button id="hint-btn" class="btn btn-star" onclick="buyHint()">💡 Взять подсказку (15 ⭐ Telegram Stars)</button>
+        <div id="hint-text" class="case-text hidden" style="color: var(--accent-gold); margin-top: 10px;"></div>
+
+        <h3 style="font-size: 15px; margin: 15px 0 10px 0;">Вынесите вердикт:</h3>
+        <div id="options-container"></div>
+    </div>
+
+    <!-- Экран отсутствия жизней -->
+    <div id="no-lives-screen" class="card hidden" style="text-align: center;">
+        <h2>🚫 Запас жизней исчерпан</h2>
+        <p class="case-text">Вы совершили ошибку в расследовании. Жизнь восстанавливается 40 минут.</p>
+        <p id="time-to-next" style="color: var(--accent-gold); font-weight: bold;"></p>
+        <button class="btn btn-star" onclick="buyLives()">❤️ Восстановить все жизни (50 ⭐ Telegram Stars)</button>
+    </div>
+
+    <div class="disclaimer">
+        ⚖️ Все персонажи и локации изменены в соответствии с законодательством. Любое совпадение с реальными событиями носит художественный характер.
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Синтез звуковых эффектов (без внешних аудиофайлов)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'click') {
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'win') {
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            }
+        }
+
+        // База данных уровней (Динамическая генерация на 100 дел)
+        // Имена и локации изменены из юридических соображений
+        const REAL_CASE_TEMPLATES = [
+            { t: "Загадка Заброшенного Поместья", d: "Хозяин дома найден без сознания в запертой изнутри комнате. Окна закрыты, следов взлома нет. На столе пустой бокал.", h: "Обратите внимание на состав напитка в бокале и отсутствие следов насилия.", o: ["Отравление через напиток", "Нападение грабителей", "Побег через тайный ход"], c: 0, img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500" },
+            { t: "Тайна Ночного Экспресса", d: "Во время движения поезда из закрытого купе пропал сейф с чертежами. Проводник утверждает, что никто не входил.", h: "Сверьте тайминг остановок поезда и доступ к техническим люкам.", o: ["Сговор с проводником", "Кража через окно", "Сейф не выносили"], c: 0, img: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=500" },
+            { t: "Исчезновение Смотрителя", d: "На старом маяке погас свет. Спасатели нашли закипевший чайник и журнал, брошенный на середине слова.", h: "Морская стихия застала смотрителя вне помещения при проверке оборудования.", o: ["Внезапная волна смыла за борт", "Нападение браконьеров", "Побег с острова"], c: 0, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500" }
+        ];
+
+        function generate100Levels() {
+            const levels = [];
+            for (let i = 1; i <= 100; i++) {
+                const template = REAL_CASE_TEMPLATES[(i - 1) % REAL_CASE_TEMPLATES.length];
+                levels.push({
+                    id: i,
+                    title: `Дело №${i}: ${template.t}`,
+                    desc: template.d,
+                    hint: template.h,
+                    options: template.o,
+                    correct: template.c,
+                    img: template.img
+                });
+            }
+            return levels;
+        }
+
+        const CASES = generate100Levels();
+
+        // Состояние игрока и Логика жизней
+        let state = {
+            level: parseInt(localStorage.getItem('det_level')) || 1,
+            lives: parseInt(localStorage.getItem('det_lives')) ?? 5,
+            lastLifeTime: parseInt(localStorage.getItem('det_last_life')) || Date.now()
+        };
+
+        const RECOVERY_TIME = 40 * 60 * 1000; // 40 минут
+
+        function updateLives() {
+            const now = Date.now();
+            if (state.lives < 5) {
+                const elapsed = now - state.lastLifeTime;
+                const recovered = Math.floor(elapsed / RECOVERY_TIME);
+                if (recovered > 0) {
+                    state.lives = Math.min(5, state.lives + recovered);
+                    state.lastLifeTime = now;
+                    saveState();
+                }
+            }
+            renderHeader();
+        }
+
+        function saveState() {
+            localStorage.setItem('det_level', state.level);
+            localStorage.setItem('det_lives', state.lives);
+            localStorage.setItem('det_last_life', state.lastLifeTime);
+        }
+
+        function renderHeader() {
+            document.getElementById('lives-count').innerText = `${state.lives}/5`;
+            document.getElementById('level-indicator').innerText = `${state.level}/100`;
+
+            if (state.lives < 5) {
+                const nextLifeIn = RECOVERY_TIME - ((Date.now() - state.lastLifeTime) % RECOVERY_TIME);
+                const minutes = Math.floor(nextLifeIn / 60000);
+                const seconds = Math.floor((nextLifeIn % 60000) / 1000);
+                document.getElementById('timer').innerText = `(+1 через ${minutes}:${seconds < 10 ? '0' : ''}${seconds})`;
+            } else {
+                document.getElementById('timer').innerText = '';
+            }
+        }
+
+        function loadLevel() {
+            updateLives();
+            if (state.lives <= 0) {
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('no-lives-screen').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('no-lives-screen').classList.add('hidden');
+
+            const current = CASES[state.level - 1];
+            document.getElementById('case-img').src = current.img;
+            document.getElementById('case-title').innerText = current.title;
+            document.getElementById('case-description').innerText = current.desc;
+            
+            // Сброс подсказки
+            document.getElementById('hint-text').classList.add('hidden');
+            document.getElementById('hint-btn').classList.remove('hidden');
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            current.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = opt;
+                btn.onclick = () => makeChoice(idx);
+                container.appendChild(btn);
+            });
+        }
+
+        function makeChoice(idx) {
+            playSound('click');
+            const current = CASES[state.level - 1];
+            
+            if (idx === current.correct) {
+                playSound('win');
+                tg.showPopup({ title: "Верно!", message: "Вы верно оценили улики и раскрыли дело." });
+                if (state.level < 100) {
+                    state.level++;
+                    saveState();
+                    loadLevel();
+                } else {
+                    tg.showPopup({ title: "Победа!", message: "Вы прошли все 100 дел и стали главным детективом!" });
+                }
+            } else {
+                playSound('error');
+                state.lives--;
+                if (state.lives === 4) state.lastLifeTime = Date.now();
+                saveState();
+                tg.showPopup({ title: "Ошибка", message: "Неверная версия. Вы потеряли 1 жизнь." });
+                loadLevel();
+            }
+        }
+
+        // Оплата через Telegram Stars
+        function buyHint() {
+            playSound('click');
+            tg.showPopup({
+                title: "Подсказка за Stars",
+                message: "Купить подсказку за 15 Telegram Stars?",
+                buttons: [{ type: "ok", text: "Купить" }, { type: "cancel" }]
+            }, (btn) => {
+                if (btn === "ok") {
+                    // Симуляция получения подтверждения от Telegram Stars
+                    const current = CASES[state.level - 1];
+                    document.getElementById('hint-text').innerText = `💡 ${current.hint}`;
+                    document.getElementById('hint-text').classList.remove('hidden');
+                    document.getElementById('hint-btn').classList.add('hidden');
+                }
+            });
+        }
+
+        function buyLives() {
+            playSound('click');
+            tg.showPopup({
+                title: "Восстановление жизней",
+                message: "Восстановить все 5 жизней за 50 Telegram Stars?",
+                buttons: [{ type: "ok", text: "Купить" }, { type: "cancel" }]
+            }, (btn) => {
+                if (btn === "ok") {
+                    state.lives = 5;
+                    saveState();
+                    loadLevel();
+                }
+            });
+        }
+
+        // Таймер и старт
+        setInterval(() => {
+            updateLives();
+        }, 1000);
+
+        loadLevel();
+    </script>
+</body>
+</html>
