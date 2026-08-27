@@ -3,492 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AI True Crime Detective</title>
+    <title>AI Detective: True Crime</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-dark: #07090e;
-            --panel-bg: rgba(22, 27, 34, 0.85);
-            --card-border: #30363d;
-            --accent-red: #ff4d4d;
-            --accent-gold: #d4af37;
-            --accent-cyan: #58a6ff;
-            --text-primary: #f0f6fc;
-            --text-secondary: #8b949e;
-        }
-
-        body {
-            margin: 0;
-            padding: 12px;
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            user-select: none;
-            background-image: radial-gradient(circle at 50% 0%, #161b22 0%, #07090e 75%);
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-
-        /* Верхняя панель */
-        .header-panel {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--panel-bg);
-            backdrop-filter: blur(10px);
-            padding: 12px 16px;
-            border-radius: 16px;
-            margin-bottom: 16px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-        }
-
-        .stat-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 700;
-            background: rgba(255,255,255,0.05);
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Контейнер карточки */
-        .card {
-            background: var(--panel-bg);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            padding: 18px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
-            margin-bottom: 16px;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 { margin: 0 0 12px 0; color: var(--accent-red); font-size: 20px; letter-spacing: 0.5px; }
-        h3 { margin: 12px 0; color: var(--accent-gold); font-size: 16px; }
-
-        .case-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 14px;
-            border: 1px solid rgba(255,255,255,0.15);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-        }
-
-        .case-desc {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #c9d1d9;
-            margin-bottom: 16px;
-        }
-
-        /* Кнопки */
-        .btn {
-            width: 100%;
-            background: #21262d;
-            color: var(--text-primary);
-            border: 1px solid var(--card-border);
-            padding: 14px;
-            margin: 6px 0;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-sizing: border-box;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-            background: #30363d;
-        }
-
-        .btn-star {
-            background: linear-gradient(135deg, #d4af37 0%, #ff8c00 100%);
-            color: #000;
-            border: none;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #b71c1c 0%, #e53935 100%);
-            color: #fff;
-            border: none;
-        }
-
-        /* Поле ввода */
-        input[type="text"] {
-            width: 100%;
-            padding: 14px;
-            background: #0d1117;
-            border: 1px solid var(--card-border);
-            color: #fff;
-            border-radius: 12px;
-            box-sizing: border-box;
-            margin-bottom: 14px;
-            font-size: 14px;
-            outline: none;
-        }
-        input[type="text"]:focus { border-color: var(--accent-cyan); }
-
-        /* Диалог допроса */
-        .chat-box {
-            height: 220px;
-            overflow-y: auto;
-            background: #0d1117;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid var(--card-border);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .msg {
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 13px;
-            line-height: 1.4;
-            max-width: 85%;
-        }
-
-        .msg.det {
-            align-self: flex-end;
-            background: #1f6feb;
-            color: #fff;
-            border-bottom-right-radius: 2px;
-        }
-
-        .msg.sus {
-            align-self: flex-start;
-            background: #21262d;
-            color: #c9d1d9;
-            border: 1px solid var(--card-border);
-            border-bottom-left-radius: 2px;
-        }
-
-        .clue-item {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--card-border);
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #8b949e;
-        }
-
-        .hidden { display: none !important; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <!-- Шапка -->
-    <div id="header" class="header-panel hidden">
+    <header id="header" class="header-panel hidden">
         <div class="stat-badge">🕵️ <span id="player-display">Детектив</span></div>
         <div class="stat-badge">❤️ <span id="lives-count">5/5</span></div>
         <div class="stat-badge">📁 Дело №<span id="level-count">1</span></div>
-    </div>
+    </header>
 
-    <!-- 1. Главный экран / Старт -->
-    <div id="screen-start" class="card">
-        <h2>🕵️ TRUE CRIME: СЕКРЕТНЫЕ АРХИВЫ</h2>
-        <img class="case-image" src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600" alt="Noir Detective">
-        <p class="case-desc">
-            Добро пожаловать в архив нераскрытых преступлений. Вам предстоит лично изучать улики, вести допрос подозреваемых и выносить приговор.
-        </p>
-        <input type="text" id="player-name-input" placeholder="Введите ваш позывной (например: Детектив Райан)">
-        <button class="btn btn-star" onclick="startGame()">🚀 Приступить к расследованию</button>
-    </div>
+    <!-- Экран 1: Старт -->
+    <section id="screen-start" class="card">
+        <div class="badge-tag">TRUE CRIME AI</div>
+        <h2>СЕКРЕТНЫЕ АРХИВЫ</h2>
+        <div class="image-wrapper">
+            <img class="case-image" src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600" alt="Detective">
+        </div>
+        <p class="desc">Расследуйте нераскрытые дела, проверяйте улики и допрашивайте подозреваемых. ИИ-подозреваемые реагируют на любые вопросы в реальном времени.</p>
+        <input type="text" id="player-name-input" placeholder="Введите ваш позывной (напр. Райан)">
+        <button class="btn btn-star" onclick="Game.start()">🚀 Начать расследование</button>
+    </section>
 
-    <!-- 2. Экран дела -->
-    <div id="screen-case" class="card hidden">
-        <img id="case-img" class="case-image" src="" alt="Место преступления">
-        <h2 id="case-title">Дело №1</h2>
-        <p id="case-desc" class="case-desc"></p>
+    <!-- Экран 2: Обзор дела -->
+    <section id="screen-case" class="card hidden">
+        <div class="image-wrapper">
+            <img id="case-img" class="case-image" src="" alt="Место преступления">
+        </div>
+        <h2 id="case-title">Загрузка дела...</h2>
+        <p id="case-desc" class="desc"></p>
 
-        <h3>Что предпринимаем?</h3>
-        <button class="btn" onclick="showClues()">🔎 Осмотреть улики</button>
-        <button class="btn" onclick="showSuspects()">👥 Допросить подозреваемых</button>
-        <button class="btn btn-danger" onclick="showVerdict()">⚖️ Вынести вердикт</button>
-    </div>
+        <div class="action-grid">
+            <button class="btn" onclick="Game.openScreen('screen-clues')">🔎 Улики</button>
+            <button class="btn" onclick="Game.openScreen('screen-suspects')">👥 Допросить</button>
+            <button class="btn btn-danger" onclick="Game.openScreen('screen-verdict')">⚖️ Обвинение</button>
+        </div>
+    </section>
 
-    <!-- 3. Экран улик -->
-    <div id="screen-clues" class="card hidden">
-        <h3>🔎 Улики с места происшествия</h3>
-        <div id="clues-container"></div>
-        <button class="btn" onclick="openScreen('screen-case')">🔙 Вернуться к материалам дела</button>
-    </div>
+    <!-- Экран 3: Улики -->
+    <section id="screen-clues" class="card hidden">
+        <h3>🔎 Вещественные доказательства</h3>
+        <div id="clues-container" class="list-container"></div>
+        <button class="btn btn-sub" onclick="Game.openScreen('screen-case')">🔙 Назад к делу</button>
+    </section>
 
-    <!-- 4. Экран списка подозреваемых -->
-    <div id="screen-suspects" class="card hidden">
-        <h3>👥 Подозреваемые по делу</h3>
-        <div id="suspects-container"></div>
-        <button class="btn" onclick="openScreen('screen-case')">🔙 Вернуться к материалам дела</button>
-    </div>
+    <!-- Экран 4: Подозреваемые -->
+    <section id="screen-suspects" class="card hidden">
+        <h3>👥 Список подозреваемых</h3>
+        <div id="suspects-container" class="list-container"></div>
+        <button class="btn btn-sub" onclick="Game.openScreen('screen-case')">🔙 Назад к делу</button>
+    </section>
 
-    <!-- 5. Экран допроса -->
-    <div id="screen-interrogation" class="card hidden">
-        <img id="suspect-photo" class="case-image" style="height: 140px;" src="" alt="Подозреваемый">
-        <h3 id="suspect-name">Допрос</h3>
+    <!-- Экран 5: Интерактивный Допрос -->
+    <section id="screen-interrogation" class="card hidden">
+        <div class="suspect-header">
+            <img id="suspect-photo" class="avatar" src="" alt="Avatar">
+            <div>
+                <h3 id="suspect-name">Допрос</h3>
+                <span id="suspect-role" class="role-badge">Подозреваемый</span>
+            </div>
+        </div>
+        
         <div class="chat-box" id="chat-box"></div>
 
-        <input type="text" id="user-question" placeholder="Задайте вопрос подозреваемому...">
-        <button class="btn" onclick="askSuspect()">💬 Задать вопрос</button>
-        <button class="btn btn-star" onclick="buyAIHint()">💡 Подсказка криминалиста (15 ⭐ Stars)</button>
-        <button class="btn" onclick="openScreen('screen-suspects')">🔙 К списку подозреваемых</button>
-    </div>
+        <div class="input-row">
+            <input type="text" id="user-question" placeholder="Спросите о мотивах, алиби или алиби...">
+            <button class="btn-send" onclick="Game.askQuestion()">➔</button>
+        </div>
+        
+        <button class="btn btn-star" onclick="Game.buyHint()">💡 Анализ ИИ-Криминалиста (15 ⭐)</button>
+        <button class="btn btn-sub" onclick="Game.openScreen('screen-suspects')">🔙 К другим подозреваемым</button>
+    </section>
 
-    <!-- 6. Экран вердикта -->
-    <div id="screen-verdict" class="card hidden">
-        <h3>⚖️ Кто совершил преступление?</h3>
-        <p class="case-desc">Будьте внимательны. Ошибка будет стоить вам одной жизни.</p>
-        <div id="verdict-container"></div>
-        <button class="btn" onclick="openScreen('screen-case')">🔙 Перепроверить улики</button>
-    </div>
+    <!-- Экран 6: Вердикт -->
+    <section id="screen-verdict" class="card hidden">
+        <h3>⚖️ Вынесение обвинения</h3>
+        <p class="desc">Выберите того, кто совершил преступление. Ошибка стоит 1 жизни.</p>
+        <div id="verdict-container" class="list-container"></div>
+        <button class="btn btn-sub" onclick="Game.openScreen('screen-case')">🔙 Перепроверить материалы</button>
+    </section>
 
-    <!-- 7. Нет жизней -->
-    <div id="screen-no-lives" class="card hidden" style="text-align: center;">
-        <h2>🚫 Отстранен от расследования</h2>
-        <p class="case-desc">Вы допустили роковую ошибку. Жизни восстановятся со временем.</p>
-        <button class="btn btn-star" onclick="buyLives()">❤️ Восстановить 5 жизней (50 ⭐ Stars)</button>
-    </div>
-
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        // Аудио движок (Web Audio API)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            if (type === 'click') {
-                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.04);
-            } else if (type === 'error') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.25);
-            } else if (type === 'win') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.25);
-            }
-        }
-
-        // Динамическая база 100 дел с уникальной графикой и персонажами
-        const CASES_DATABASE = [
-            {
-                id: 1,
-                title: "Дело №1: Тайна закрытого особняка",
-                img: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600",
-                desc: "Владелец картинной галереи найден мертвым в своем кабинете. Дверь заперта изнутри, ключ лежал на столе.",
-                clues: [
-                    "🔍 Записка на столе со странным шифром '104'",
-                    "🔍 Открытая вентиляционная решетка под потолком",
-                    "🔍 Два бокала с остатками редкого вина"
-                ],
-                suspects: [
-                    { name: "Виктор (Партнер)", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300", role: "Бизнес-партнер", secret: "Врал про время ухода." },
-                    { name: "Елена (Ассистент)", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300", role: "Личный секретарь", secret: "Отравила вино через вентиляцию." }
-                ],
-                correctSuspect: 1,
-                aiResponses: {
-                    "вино": "Я вообще не пью алкоголь! Это вино заказывала Елена для встречи.",
-                    "где вы были": "Я ушел ровно в 20:00. Камеры на парковке могут это подтвердить!",
-                    "вентиляция": "Вентиляцию чинили на прошлой неделе, я в этом не разбираюсь."
-                }
-            },
-            {
-                id: 2,
-                title: "Дело №2: Исчезновение в полуночном экспрессе",
-                img: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=600",
-                desc: "Из сейфа в закрытом купе движущегося поезда пропали секретные документальные чертежи.",
-                clues: [
-                    "🔍 Замок сейфа взломан без единой царапины (знание кода)",
-                    "🔍 Окно купе приоткрыто, но снаружи идет сильный дождь",
-                    "🔍 На ковре обнаружены следы дорогой мужской помады"
-                ],
-                suspects: [
-                    { name: "Артур (Проводник)", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300", role: "Обслуживал вагон", secret: "Продал код от сейфа." },
-                    { name: "София (Актриса)", photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300", role: "Пассажирка со соседнего купе", secret: "Инсценировала кражу." }
-                ],
-                correctSuspect: 0,
-                aiResponses: {
-                    "код": "Я работаю тут 10 лет, я не знаю кодов от сейфов пассажиров!",
-                    "помада": "Эта помада принадлежит госпоже Софии, она заходила спросить чай.",
-                    "дождь": "Окно открыли уже после того, как поезд остановился!"
-                }
-            },
-            {
-                id: 3,
-                title: "Дело №3: Тень над старым маяком",
-                img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600",
-                desc: "На обособленном маяке потух сигнал. Прибывшая береговая охрана нашла пустую станцию.",
-                clues: [
-                    "🔍 Обед на столе остался горячим",
-                    "🔍 Разрушенные перила на западном пирсе",
-                    "🔍 Дневник смотрителя оборван на слове 'Волна...'"
-                ],
-                suspects: [
-                    { name: "Марк (Капитан)", photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300", role: "Проходящий моряк", secret: "Не причастен к пропаже." },
-                    { name: "Стихия / Аномалия", photo: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=300", role: "Природный фактор", secret: "Смотрителя смыло волной." }
-                ],
-                correctSuspect: 1,
-                aiResponses: {
-                    "волны": "В тот вечер был шторм невиданной силы! Волна зашкаливала за 15 метров!",
-                    "дневник": "Смотритель всегда фиксировал аномалии погоды."
-                }
-            }
-        ];
-
-        // Инициализация состояния игры
-        let state = {
-            playerName: localStorage.getItem('det_name') || '',
-            level: parseInt(localStorage.getItem('det_level')) || 1,
-            lives: parseInt(localStorage.getItem('det_lives')) ?? 5,
-            currentSuspect: null
-        };
-
-        if (isNaN(state.lives)) state.lives = 5;
-        if (isNaN(state.level)) state.level = 1;
-
-        function saveState() {
-            localStorage.setItem('det_name', state.playerName);
-            localStorage.setItem('det_level', state.level);
-            localStorage.setItem('det_lives', state.lives);
-        }
-
-        function updateHeader() {
-            document.getElementById('player-display').innerText = state.playerName || 'Детектив';
-            document.getElementById('lives-count').innerText = `${state.lives}/5`;
-            document.getElementById('level-count').innerText = state.level;
-        }
-
-        function openScreen(id) {
-            playSound('click');
-            ['screen-start', 'screen-case', 'screen-clues', 'screen-suspects', 'screen-interrogation', 'screen-verdict', 'screen-no-lives'].forEach(s => {
-                document.getElementById(s).classList.add('hidden');
-            });
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function startGame() {
-            const inputName = document.getElementById('player-name-input').value.trim();
-            if (!inputName && !state.playerName) {
-                alert('Пожалуйста, введите имя или позывной!');
-                return;
-            }
-            if (inputName) state.playerName = inputName;
-            saveState();
-
-            document.getElementById('header').classList.remove('hidden');
-            updateHeader();
-            loadCase();
-        }
-
-        function getCurrentCase() {
-            // Динамический расчёт текущего дела
-            const caseIndex = (state.level - 1) % CASES_DATABASE.length;
-            const baseCase = CASES_DATABASE[caseIndex];
-            
-            // Динамическая адаптация номера дела
-            return {
-                ...baseCase,
-                title: `Дело №${state.level}: ${baseCase.title.split(': ')[1] || baseCase.title}`
-            };
-        }
-
-        function loadCase() {
-            if (state.lives <= 0) {
-                openScreen('screen-no-lives');
-                return;
-            }
-
-            const current = getCurrentCase();
-            document.getElementById('case-img').src = current.img;
-            document.getElementById('case-title').innerText = current.title;
-            document.getElementById('case-desc').innerText = current.desc;
-            
-            openScreen('screen-case');
-        }
-
-        function showClues() {
-            const current = getCurrentCase();
-            const container = document.getElementById('clues-container');
-            container.innerHTML = current.clues.map(c => `<div class="clue-item">${c}</div>`).join('');
-            openScreen('screen-clues');
-        }
-
-        function showSuspects() {
-            const current = getCurrentCase();
-            const container = document.getElementById('suspects-container');
-            container.innerHTML = current.suspects.map((s, idx) => `
-                <button class="btn" onclick="startInterrogation(${idx})">
-                    🕵️‍♂️ ${s.name} — <span style="color:var(--text-secondary)">${s.role}</span>
-                </button>
-            `).join('');
-            openScreen('screen-suspects');
-        }
-
-        function startInterrogation(idx) {
-            const current = getCurrentCase();
-            state.currentSuspect = current.suspects[idx];
-            
-            document.getElementById('suspect-photo').src = state.currentSuspect.photo;
-            document.getElementById('suspect-name').innerText = `Допрос: ${state.currentSuspect.name}`;
-            
-            const chat = document.getElementById('chat-box');
-            chat.innerHTML = `<div class="msg sus"><b>${state.currentSuspect.name}:</b> Приветствую, ${state.playerName}. Чем могу помочь следствию?</div>`;
-            
-            openScreen('screen-interrogation');
-        }
-
-        function askSuspect() {
-            const input = document.getElementById('user-question');
-            const questionText = input.value.trim();
-            if (!questionText) return;
-
-            playSound('click');
-            const chat = document.getElementById('chat-box');
-            chat.innerHTML += `<div class="msg det"><b>${state.playerName}:</b> ${questionText}</div>`;
-
-            const current = getCurrentCase();
-            const qLower = questionText.toLowerCase();
-            let answer = "Мне нечего сказать по этому поводу без моего адвоката.";
-
-            for (let key in current.aiResponses) {
-                if (qLower.includes(key)) {
-                    answer = current.aiResponses[key];
-                    break;
-                }
-            }
-
-            setTimeout(() => {
-                chat.innerHTML += `<d
+    <!-- Скрипты -->
+    <script src="ai_engine.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
