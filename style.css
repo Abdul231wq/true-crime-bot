@@ -88,18 +88,20 @@ img {
     margin: 0 auto;
 }
 
-/* Верхняя панель */
-
 .topbar {
     display: grid;
-    grid-template-columns: 1fr 0.75fr 0.85fr;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
     gap: 6px;
 
     width: 100%;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     padding: 7px;
 
-    background: rgba(21, 27, 35, 0.98);
+    background:
+        rgba(21, 27, 35, 0.98);
+
     border: 1px solid var(--border);
     border-radius: 14px;
 }
@@ -110,11 +112,16 @@ img {
 
     overflow: hidden;
 
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background:
+        rgba(255, 255, 255, 0.05);
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.1);
+
     border-radius: 8px;
 
     color: var(--text);
+
     font-size: 11px;
     font-weight: 700;
     text-align: center;
@@ -122,7 +129,30 @@ img {
     white-space: nowrap;
 }
 
-/* Экраны */
+.sound-toggle {
+    display: block;
+
+    width: 100%;
+    min-height: 38px;
+    margin: 0 0 12px;
+    padding: 8px 10px;
+
+    background:
+        rgba(21, 27, 35, 0.95);
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    color: var(--muted);
+    cursor: pointer;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sound-toggle:active {
+    transform: scale(0.98);
+}
 
 .screen {
     width: 100%;
@@ -130,16 +160,21 @@ img {
     margin-bottom: 12px;
     padding: 16px;
 
-    background: rgba(21, 27, 35, 0.98);
+    background:
+        rgba(21, 27, 35, 0.98);
+
     border: 1px solid var(--border);
     border-radius: 18px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 .eyebrow {
     margin-bottom: 7px;
 
     color: var(--gold);
+
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 1.4px;
@@ -149,6 +184,7 @@ h1,
 h2,
 h3 {
     margin-top: 0;
+
     color: var(--text);
     line-height: 1.15;
 }
@@ -167,11 +203,32 @@ h2 {
     margin: 0 0 14px;
 
     color: var(--muted);
+
     font-size: 14px;
     line-height: 1.45;
 }
 
-/* Изображения */
+.start-info {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+
+    background:
+        rgba(224, 182, 61, 0.1);
+
+    border: 1px solid
+        rgba(224, 182, 61, 0.35);
+
+    border-radius: 10px;
+
+    color: var(--muted);
+
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.start-info strong {
+    color: var(--gold);
+}
 
 .hero-image,
 .case-image {
@@ -182,6 +239,7 @@ h2 {
     overflow: hidden;
 
     background: #111820;
+
     border: 1px solid var(--border);
     border-radius: 12px;
 }
@@ -190,11 +248,10 @@ h2 {
 .case-image img {
     width: 100%;
     height: 100%;
+
     object-fit: cover;
     object-position: center;
 }
-
-/* Поля */
 
 input[type="text"] {
     display: block;
@@ -206,11 +263,13 @@ input[type="text"] {
     padding: 0 12px;
 
     background: var(--surface-dark);
+
     border: 1px solid var(--border);
     border-radius: 10px;
     outline: none;
 
     color: var(--text);
+
     font-size: 14px;
 }
 
@@ -222,8 +281,6 @@ input[type="text"]:focus {
     border-color: var(--blue);
 }
 
-/* Кнопки */
-
 .button {
     display: block;
 
@@ -233,6 +290,7 @@ input[type="text"]:focus {
     padding: 11px 12px;
 
     background: var(--button);
+
     border: 1px solid var(--border);
     border-radius: 10px;
 
@@ -251,19 +309,33 @@ input[type="text"]:focus {
 
 .button:active,
 .send:active,
-.quick-questions button:active {
+.quick-questions button:active,
+.suspect-card:active,
+.verdict-card:active {
     transform: scale(0.98);
     filter: brightness(1.15);
 }
 
 .button-primary {
-    background: linear-gradient(135deg, var(--gold), var(--orange));
+    background:
+        linear-gradient(
+            135deg,
+            var(--gold),
+            var(--orange)
+        );
+
     border: none;
     color: #111;
 }
 
 .button-danger {
-    background: linear-gradient(135deg, #a51a1e, var(--red));
+    background:
+        linear-gradient(
+            135deg,
+            #a51a1e,
+            var(--red)
+        );
+
     border: none;
     color: #fff;
 }
@@ -274,11 +346,11 @@ input[type="text"]:focus {
     color: var(--muted);
 }
 
-/* Информация */
-
 .info-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
     gap: 8px;
     margin-bottom: 12px;
 }
@@ -287,7 +359,9 @@ input[type="text"]:focus {
     min-width: 0;
     padding: 10px 8px;
 
-    background: rgba(255, 255, 255, 0.04);
+    background:
+        rgba(255, 255, 255, 0.04);
+
     border: 1px solid var(--border);
     border-radius: 12px;
 
@@ -307,10 +381,31 @@ input[type="text"]:focus {
     font-size: 14px;
 }
 
+.difficulty {
+    display: inline-block;
+
+    margin: -4px 0 13px;
+    padding: 5px 9px;
+
+    background:
+        rgba(224, 182, 61, 0.12);
+
+    border: 1px solid
+        rgba(224, 182, 61, 0.4);
+
+    border-radius: 999px;
+
+    color: var(--gold);
+
+    font-size: 11px;
+    font-weight: 800;
+}
+
 .list {
     display: flex;
     flex-direction: column;
     gap: 5px;
+
     width: 100%;
     margin-bottom: 12px;
 }
@@ -324,10 +419,12 @@ input[type="text"]:focus {
     padding: 12px;
 
     background: var(--button);
+
     border: 1px solid var(--border);
     border-radius: 10px;
 
     color: var(--text);
+
     font-size: 13px;
     line-height: 1.35;
 }
@@ -344,19 +441,21 @@ input[type="text"]:focus {
     border-radius: 50%;
 
     color: #111;
+
     font-size: 12px;
     font-weight: 800;
 }
 
-.suspect-card,
-.verdict-card {
+.suspect-card {
     display: flex;
     align-items: center;
+
     width: 100%;
-    min-height: 60px;
+    min-height: 68px;
     padding: 8px;
 
     background: var(--button);
+
     border: 1px solid var(--border);
     border-radius: 12px;
 
@@ -365,14 +464,9 @@ input[type="text"]:focus {
     text-align: left;
 }
 
-.suspect-card:active,
-.verdict-card:active {
-    transform: scale(0.98);
-}
-
 .suspect-card img {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     margin-right: 10px;
 
     border-radius: 50%;
@@ -387,6 +481,7 @@ input[type="text"]:focus {
 
 .suspect-card-info strong {
     overflow: hidden;
+
     font-size: 14px;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -408,18 +503,32 @@ input[type="text"]:focus {
 }
 
 .verdict-card {
+    display: flex;
+    align-items: center;
     justify-content: center;
-    text-align: center;
+
+    width: 100%;
+    min-height: 50px;
+    padding: 10px;
+
+    background: var(--button);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    color: var(--text);
+    cursor: pointer;
+
     font-size: 14px;
     font-weight: 700;
+    text-align: center;
 }
-
-/* Подозреваемый */
 
 .suspect {
     display: flex;
     align-items: center;
     gap: 12px;
+
     min-width: 0;
     margin-bottom: 12px;
 }
@@ -442,6 +551,7 @@ input[type="text"]:focus {
 
 .suspect h2 {
     overflow: hidden;
+
     margin-bottom: 4px;
 
     font-size: 17px;
@@ -455,19 +565,20 @@ input[type="text"]:focus {
     overflow: hidden;
 
     color: var(--gold);
+
     font-size: 11px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
-/* Шкала подозрения */
 
 .suspicion {
     width: 100%;
     margin-bottom: 12px;
     padding: 12px;
 
-    background: rgba(255, 255, 255, 0.04);
+    background:
+        rgba(255, 255, 255, 0.04);
+
     border: 1px solid var(--border);
     border-radius: 14px;
 }
@@ -477,6 +588,7 @@ input[type="text"]:focus {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+
     margin-bottom: 8px;
 
     color: var(--muted);
@@ -494,6 +606,7 @@ input[type="text"]:focus {
     overflow: hidden;
 
     background: var(--surface-dark);
+
     border: 1px solid var(--border);
     border-radius: 999px;
 }
@@ -502,12 +615,13 @@ input[type="text"]:focus {
     width: 0%;
     height: 100%;
 
-    background: linear-gradient(
-        90deg,
-        var(--green),
-        #d29922,
-        #f85149
-    );
+    background:
+        linear-gradient(
+            90deg,
+            var(--green),
+            #d29922,
+            #f85149
+        );
 
     border-radius: 999px;
 
@@ -520,13 +634,12 @@ input[type="text"]:focus {
     display: flex;
     justify-content: space-between;
     gap: 4px;
+
     margin-top: 6px;
 
     color: #6f7b89;
     font-size: 9px;
 }
-
-/* Быстрые вопросы */
 
 .quick-questions {
     display: flex;
@@ -551,6 +664,7 @@ input[type="text"]:focus {
     padding: 8px 12px;
 
     background: var(--button);
+
     border: 1px solid var(--border);
     border-radius: 999px;
 
@@ -561,8 +675,6 @@ input[type="text"]:focus {
     font-weight: 700;
     white-space: nowrap;
 }
-
-/* Чат */
 
 .chat {
     display: flex;
@@ -577,6 +689,7 @@ input[type="text"]:focus {
     overflow-y: auto;
 
     background: var(--surface-dark);
+
     border: 1px solid var(--border);
     border-radius: 10px;
 }
@@ -594,14 +707,18 @@ input[type="text"]:focus {
 
 .message.det {
     align-self: flex-end;
+
     background: var(--blue);
     color: #fff;
 }
 
 .message.sus {
     align-self: flex-start;
+
     background: var(--button);
+
     border: 1px solid var(--border);
+
     color: var(--text);
 }
 
@@ -609,6 +726,7 @@ input[type="text"]:focus {
     display: flex;
     align-items: stretch;
     gap: 6px;
+
     width: 100%;
 }
 
@@ -630,11 +748,10 @@ input[type="text"]:focus {
 
     color: #fff;
     cursor: pointer;
+
     font-size: 20px;
     font-weight: 800;
 }
-
-/* Результат */
 
 .result {
     text-align: center;
@@ -647,7 +764,9 @@ input[type="text"]:focus {
 
 .result-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
     gap: 7px;
     margin: 14px 0;
 }
@@ -656,7 +775,9 @@ input[type="text"]:focus {
     min-width: 0;
     padding: 10px 5px;
 
-    background: rgba(255, 255, 255, 0.05);
+    background:
+        rgba(255, 255, 255, 0.05);
+
     border: 1px solid var(--border);
     border-radius: 12px;
 }
@@ -675,17 +796,21 @@ input[type="text"]:focus {
     overflow: hidden;
 
     color: var(--text);
+
     font-size: 13px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-/* Маленькие телефоны */
-
 @media (max-width: 380px) {
     body {
         padding-right: 8px;
         padding-left: 8px;
+    }
+
+    .topbar {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
 
     .screen {
@@ -695,6 +820,7 @@ input[type="text"]:focus {
     .stat {
         padding-right: 2px;
         padding-left: 2px;
+
         font-size: 10px;
     }
 
@@ -720,66 +846,5 @@ input[type="text"]:focus {
     .hero-image,
     .case-image {
         height: 240px;
-    }
-        }
-.topbar {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.sound-toggle {
-    display: block;
-
-    width: 100%;
-    min-height: 38px;
-    margin: 0 0 12px;
-    padding: 8px 10px;
-
-    background: rgba(21, 27, 35, 0.95);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-
-    color: var(--muted);
-    cursor: pointer;
-
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.sound-toggle:active {
-    transform: scale(0.98);
-}
-
-.difficulty {
-    display: inline-block;
-
-    margin: -4px 0 13px;
-    padding: 5px 9px;
-
-    background: rgba(224, 182, 61, 0.12);
-    border: 1px solid rgba(224, 182, 61, 0.4);
-    border-radius: 999px;
-
-    color: var(--gold);
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.suspect-card {
-    min-height: 68px;
-}
-
-.suspect-card:hover,
-.verdict-card:hover,
-.button:hover {
-    filter: brightness(1.12);
-}
-
-@media (max-width: 380px) {
-    .topbar {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .sound-toggle {
-        font-size: 11px;
     }
 }
