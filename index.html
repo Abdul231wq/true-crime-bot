@@ -21,19 +21,31 @@
     <main class="app">
 
         <header id="header" class="topbar hidden">
-            <div class="stat">
-                🕵️ <span id="player-display">Детектив</span>
-            </div>
+    <div class="stat">
+        🕵️ <span id="player-display">Детектив</span>
+    </div>
 
-            <div class="stat">
-                ❤️ <span id="lives-count">5/5</span>
-            </div>
+    <div class="stat">
+        ❤️ <span id="lives-count">5/5</span>
+    </div>
 
-            <div class="stat">
-                📁 Дело №<span id="level-count">1</span>
-            </div>
+    <div class="stat">
+        📁 Уровень <span id="level-count">1</span>
+    </div>
+
+    <div class="stat">
+        💡 <span id="hints-count">5</span>
+    </div>
         </header>
-
+        <button
+    id="sound-toggle"
+    class="sound-toggle"
+    type="button"
+    onclick="Game.toggleSound()"
+>
+    🔊 Звук включён
+        </button>
+        
         <section id="screen-start" class="screen">
             <div class="eyebrow">TRUE CRIME AI</div>
 
@@ -74,13 +86,17 @@
             </div>
 
             <h2 id="case-title">Загрузка дела...</h2>
+            
+            <div id="case-difficulty" class="difficulty">
+    Сложность: Средняя
+            </div>
 
             <p id="case-desc" class="description"></p>
 
             <div class="info-grid">
                 <div class="info-card">
                     <span>Вопросы</span>
-                    <strong id="questions-left-badge">5/5</strong>
+                    <strong id="questions-left-badge">7/7</strong>
                 </div>
 
                 <div class="info-card">
@@ -129,17 +145,22 @@
         </section>
 
         <section id="screen-suspects" class="screen hidden">
-            <h2>👥 Список подозреваемых</h2>
+    <h2>👥 Список подозреваемых</h2>
 
-            <div id="suspects-container" class="list"></div>
+    <p class="description">
+        В деле четыре подозреваемых. Изучите их алиби,
+        мотивы и связи с жертвой.
+    </p>
 
-            <button
-                class="button button-secondary"
-                type="button"
-                onclick="Game.openScreen('screen-case')"
-            >
-                🔙 Назад к делу
-            </button>
+    <div id="suspects-container" class="list"></div>
+
+    <button
+        class="button button-secondary"
+        type="button"
+        onclick="Game.openScreen('screen-case')"
+    >
+        🔙 Назад к делу
+    </button>
         </section>
 
         <section id="screen-interrogation" class="screen hidden">
@@ -210,11 +231,11 @@
             </div>
 
             <button
-                class="button button-primary"
-                type="button"
-                onclick="Game.buyHint()"
-            >
-                💡 Анализ ИИ-Криминалиста
+    class="button button-primary"
+    type="button"
+    onclick="Game.buyHint()"
+>
+    💡 Использовать бесплатную подсказку
             </button>
 
             <button
