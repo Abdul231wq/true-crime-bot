@@ -722,3 +722,64 @@ input[type="text"]:focus {
         height: 240px;
     }
         }
+.topbar {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.sound-toggle {
+    display: block;
+
+    width: 100%;
+    min-height: 38px;
+    margin: 0 0 12px;
+    padding: 8px 10px;
+
+    background: rgba(21, 27, 35, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    color: var(--muted);
+    cursor: pointer;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sound-toggle:active {
+    transform: scale(0.98);
+}
+
+.difficulty {
+    display: inline-block;
+
+    margin: -4px 0 13px;
+    padding: 5px 9px;
+
+    background: rgba(224, 182, 61, 0.12);
+    border: 1px solid rgba(224, 182, 61, 0.4);
+    border-radius: 999px;
+
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.suspect-card {
+    min-height: 68px;
+}
+
+.suspect-card:hover,
+.verdict-card:hover,
+.button:hover {
+    filter: brightness(1.12);
+}
+
+@media (max-width: 380px) {
+    .topbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sound-toggle {
+        font-size: 11px;
+    }
+}
