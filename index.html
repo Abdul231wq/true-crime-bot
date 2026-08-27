@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>AI Detective: True Crime</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -20,11 +20,16 @@
     <section id="screen-start" class="card">
         <div class="badge-tag">TRUE CRIME AI</div>
         <h2>СЕКРЕТНЫЕ АРХИВЫ</h2>
+
         <div class="image-wrapper">
             <img class="case-image" src="https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?w=600" alt="Crime Scene">
-
         </div>
-        <p class="desc">Расследуйте нераскрытые дела, проверяйте улики и допрашивайте подозреваемых. ИИ-подозреваемые реагируют на любые вопросы в реальном времени.</p>
+
+        <p class="desc">
+            Расследуйте нераскрытые дела, проверяйте улики и допрашивайте подозреваемых.
+            ИИ-подозреваемые реагируют на ваши вопросы в реальном времени.
+        </p>
+
         <input type="text" id="player-name-input" placeholder="Введите ваш позывной (напр. Райан)">
         <button class="btn btn-star" onclick="Game.start()">🚀 Начать расследование</button>
     </section>
@@ -34,6 +39,7 @@
         <div class="image-wrapper">
             <img id="case-img" class="case-image" src="" alt="Место преступления">
         </div>
+
         <h2 id="case-title">Загрузка дела...</h2>
         <p id="case-desc" class="desc"></p>
 
@@ -58,7 +64,7 @@
         <button class="btn btn-sub" onclick="Game.openScreen('screen-case')">🔙 Назад к делу</button>
     </section>
 
-    <!-- Экран 5: Интерактивный Допрос -->
+    <!-- Экран 5: Интерактивный допрос -->
     <section id="screen-interrogation" class="card hidden">
         <div class="suspect-header">
             <img id="suspect-photo" class="avatar" src="" alt="Avatar">
@@ -67,14 +73,21 @@
                 <span id="suspect-role" class="role-badge">Подозреваемый</span>
             </div>
         </div>
-        
+
+        <div class="quick-actions">
+            <button class="chip-btn" onclick="Game.quickAsk('alibi')">Алиби</button>
+            <button class="chip-btn" onclick="Game.quickAsk('motive')">Мотив</button>
+            <button class="chip-btn" onclick="Game.quickAsk('clue')">Улики</button>
+            <button class="chip-btn" onclick="Game.quickAsk('relation')">Жертва</button>
+        </div>
+
         <div class="chat-box" id="chat-box"></div>
 
         <div class="input-row">
-            <input type="text" id="user-question" placeholder="Спросите о мотивах, алиби или алиби...">
+            <input type="text" id="user-question" placeholder="Спросите о мотивах или алиби...">
             <button class="btn-send" onclick="Game.askQuestion()">➔</button>
         </div>
-        
+
         <button class="btn btn-star" onclick="Game.buyHint()">💡 Анализ ИИ-Криминалиста (15 ⭐)</button>
         <button class="btn btn-sub" onclick="Game.openScreen('screen-suspects')">🔙 К другим подозреваемым</button>
     </section>
@@ -87,7 +100,31 @@
         <button class="btn btn-sub" onclick="Game.openScreen('screen-case')">🔙 Перепроверить материалы</button>
     </section>
 
-    <!-- Скрипты -->
+    <!-- Экран 7: Результат дела -->
+    <section id="screen-result" class="card hidden">
+        <div class="result-icon" id="result-icon">🎯</div>
+        <h2 id="result-title">Дело раскрыто</h2>
+        <p id="result-text" class="desc"></p>
+
+        <div class="result-stats">
+            <div class="result-stat">
+                <span class="result-label">Позывной</span>
+                <span id="result-player">Детектив</span>
+            </div>
+            <div class="result-stat">
+                <span class="result-label">Уровень</span>
+                <span id="result-level">1</span>
+            </div>
+            <div class="result-stat">
+                <span class="result-label">Жизни</span>
+                <span id="result-lives">5/5</span>
+            </div>
+        </div>
+
+        <button class="btn btn-star" onclick="Game.loadCase()">➡️ Следующее дело</button>
+        <button class="btn btn-sub" onclick="Game.openScreen('screen-case')">🔙 К делу</button>
+    </section>
+
     <script src="ai_engine.js"></script>
     <script src="game.js"></script>
 </body>
