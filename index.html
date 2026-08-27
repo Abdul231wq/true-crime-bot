@@ -9,14 +9,12 @@
 </head>
 <body>
 
-    <!-- Шапка -->
     <header id="header" class="header-panel hidden">
         <div class="stat-badge">🕵️ <span id="player-display">Детектив</span></div>
         <div class="stat-badge">❤️ <span id="lives-count">5/5</span></div>
         <div class="stat-badge">📁 Дело №<span id="level-count">1</span></div>
     </header>
 
-    <!-- Экран 1: Старт -->
     <section id="screen-start" class="card">
         <div class="badge-tag">TRUE CRIME AI</div>
         <h2>СЕКРЕТНЫЕ АРХИВЫ</h2>
@@ -34,7 +32,6 @@
         <button class="btn btn-star" onclick="Game.start()">🚀 Начать расследование</button>
     </section>
 
-    <!-- Экран 2: Обзор дела -->
     <section id="screen-case" class="card hidden">
         <div class="image-wrapper">
             <img id="case-img" class="case-image" src="" alt="Место преступления">
@@ -43,6 +40,17 @@
         <h2 id="case-title">Загрузка дела...</h2>
         <p id="case-desc" class="desc"></p>
 
+        <div class="case-meta">
+            <div class="meta-box">
+                <span class="meta-label">Вопросы</span>
+                <span id="questions-left-badge" class="meta-value">5/5</span>
+            </div>
+            <div class="meta-box">
+                <span class="meta-label">Подсказка</span>
+                <span class="meta-value">15 ⭐</span>
+            </div>
+        </div>
+
         <div class="action-grid">
             <button class="btn" onclick="Game.openScreen('screen-clues')">🔎 Улики</button>
             <button class="btn" onclick="Game.openScreen('screen-suspects')">👥 Допросить</button>
@@ -50,27 +58,34 @@
         </div>
     </section>
 
-    <!-- Экран 3: Улики -->
     <section id="screen-clues" class="card hidden">
         <h3>🔎 Вещественные доказательства</h3>
         <div id="clues-container" class="list-container"></div>
         <button class="btn btn-sub" onclick="Game.openScreen('screen-case')">🔙 Назад к делу</button>
     </section>
 
-    <!-- Экран 4: Подозреваемые -->
     <section id="screen-suspects" class="card hidden">
         <h3>👥 Список подозреваемых</h3>
         <div id="suspects-container" class="list-container"></div>
         <button class="btn btn-sub" onclick="Game.openScreen('screen-case')">🔙 Назад к делу</button>
     </section>
 
-    <!-- Экран 5: Интерактивный допрос -->
     <section id="screen-interrogation" class="card hidden">
         <div class="suspect-header">
             <img id="suspect-photo" class="avatar" src="" alt="Avatar">
-            <div>
+            <div class="suspect-info">
                 <h3 id="suspect-name">Допрос</h3>
                 <span id="suspect-role" class="role-badge">Подозреваемый</span>
+            </div>
+        </div>
+
+        <div class="suspicion-panel">
+            <div class="suspicion-row">
+                <span class="suspicion-label">Подозрение</span>
+                <span id="suspicion-value" class="suspicion-value">0%</span>
+            </div>
+            <div class="suspicion-bar">
+                <div id="suspicion-fill" class="suspicion-fill"></div>
             </div>
         </div>
 
@@ -92,7 +107,6 @@
         <button class="btn btn-sub" onclick="Game.openScreen('screen-suspects')">🔙 К другим подозреваемым</button>
     </section>
 
-    <!-- Экран 6: Вердикт -->
     <section id="screen-verdict" class="card hidden">
         <h3>⚖️ Вынесение обвинения</h3>
         <p class="desc">Выберите того, кто совершил преступление. Ошибка стоит 1 жизни.</p>
@@ -100,7 +114,6 @@
         <button class="btn btn-sub" onclick="Game.openScreen('screen-case')">🔙 Перепроверить материалы</button>
     </section>
 
-    <!-- Экран 7: Результат дела -->
     <section id="screen-result" class="card hidden">
         <div class="result-icon" id="result-icon">🎯</div>
         <h2 id="result-title">Дело раскрыто</h2>
@@ -128,4 +141,4 @@
     <script src="ai_engine.js"></script>
     <script src="game.js"></script>
 </body>
-</html>
+    </html>
