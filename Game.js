@@ -8,17 +8,17 @@ const Game = {
         currentCase: null
     },
 
-    // База дел
+    // База дел с исправленными тематическими фото
     cases: [
         {
             id: 1,
             title: "Тайна закрытого особняка",
-            img: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600",
-            desc: "Владелец арт-галереи найден мертвым в кабинете. Дверь заперта изнутри, ключ на столе.",
+            img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600",
+            desc: "Владелец арт-галереи найден мертвым в кабинете. Дверь заперта изнутри, ключ лежал на столе.",
             clues: ["Записка со странным шифром '104'", "Вентиляционная решетка под потолком открыта", "Два бокала с остатками редкого вина"],
             suspects: [
-                { name: "Виктор", role: "Бизнес-партнер", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300", isGuilty: false },
-                { name: "Елена", role: "Ассистентка", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300", isGuilty: true }
+                { name: "Виктор", role: "Бизнес-партнер", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300", isGuilty: false },
+                { name: "Елена", role: "Ассистентка", photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300", isGuilty: true }
             ],
             guiltyIndex: 1
         },
@@ -26,10 +26,10 @@ const Game = {
             id: 2,
             title: "Исчезновение в экспрессе",
             img: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=600",
-            desc: "Из сейфа в движущемся поезде пропали секретные документы.",
+            desc: "Из сейфа в движущемся поезде пропали секретные документальные чертежи.",
             clues: ["Сейф открыт без повреждений", "Открытое окно во время дождя", "Следы женской помады"],
             suspects: [
-                { name: "Артур", role: "Проводник", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300", isGuilty: true },
+                { name: "Артур", role: "Проводник", photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300", isGuilty: true },
                 { name: "София", role: "Пассажирка", photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300", isGuilty: false }
             ],
             guiltyIndex: 0
@@ -68,7 +68,7 @@ const Game = {
     start: function() {
         const nameInput = document.getElementById('player-name-input').value.trim();
         if (!nameInput && !this.state.playerName) {
-            alert("Введите позывной!");
+            alert("Введите ваш позывной!");
             return;
         }
         if (nameInput) this.state.playerName = nameInput;
@@ -95,7 +95,7 @@ const Game = {
 
     renderClues: function() {
         const cont = document.getElementById('clues-container');
-        cont.innerHTML = this.state.currentCase.clues.map(c => `<div class="btn" style="text-align:left;">${c}</div>`).join('');
+        cont.innerHTML = this.state.currentCase.clues.map(c => `<div class="btn" style="text-align:left;">🔍 ${c}</div>`).join('');
     },
 
     renderSuspects: function() {
@@ -142,7 +142,7 @@ const Game = {
 
     makeVerdict: function(idx) {
         if (idx === this.state.currentCase.guiltyIndex) {
-            alert(`🎯 Правильно! Детектив ${this.state.playerName}, вы успешно раскрыли Дело №${this.state.level}!`);
+            alert(`🎯 Отличная работа! Детектив ${this.state.playerName}, вы правильно раскрыли Дело №${this.state.level}!`);
             this.state.level++;
             this.save();
             this.updateHeader();
@@ -151,7 +151,7 @@ const Game = {
             this.state.lives--;
             this.save();
             this.updateHeader();
-            alert(`❌ Ошибка! Обвинение не подтвердилось. Вы потеряли жизнь.`);
+            alert(`❌ Ошибка! Ваши обвинения не подтвердились. Вы потеряли 1 жизнь.`);
             if (this.state.lives <= 0) {
                 alert("Запас жизней исчерпан. Перезапуск...");
                 this.state.lives = 5;
@@ -170,4 +170,4 @@ const Game = {
 };
 
 window.onload = () => Game.init();
-            
+                
