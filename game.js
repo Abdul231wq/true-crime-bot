@@ -197,7 +197,6 @@ const Game = {
             "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=1000&q=80",
             "https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=1000&q=80"
         ];
-
         const suspectPhotos = [
             "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80",
             "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&q=80",
@@ -423,7 +422,6 @@ const Game = {
         this.updateHeader();
         this.loadCase();
     },
-
     loadCase: function() {
         const index =
             (this.state.level - 1) %
@@ -628,7 +626,7 @@ const Game = {
         );
     },
 
-    openInterrogation: function(index) {
+openInterrogation: function(index) {
         const suspect =
             this.state.currentCase?.suspects[index];
 
@@ -748,4 +746,620 @@ const Game = {
         }
 
         const current =
-            this.state.currentSu
+            this.state.currentSuspect.suspicion ||
+            0;
+
+        this.updateSuspicion(
+            current + amount
+        );
+    },
+
+    quickAsk: function(type) {
+        const questions = {
+            alibi:
+                "Где вы были во время преступления?",
+
+            motive:
+                "Какой у вас был мотив?",
+
+            clue:
+                "Что вы знаете об этой улике?",
+
+            relation:
+                "Какие у вас были отношения с жертвой?"
+        };
+
+        const input =
+            document.getElementById(
+                "user-question"
+            );
+
+        if (input) {
+            input.value =
+                questions[type] || "";
+        }
+
+        this.askQuestion(type);
+    },
+
+    askQuestion: function(type = null) {
+        const input =
+            document.getElementById(
+                "user-question"
+            );
+
+        const question =
+            input?.value.trim();
+
+        if (!question && !type) {
+            return;
+        }
+
+        if (this.state.questionsLeft <= 0) {
+            this.addMessage(
+                "sus",
+                "Вопросы закончились. Теперь нужно принять решение."
+            );
+
+            this.playSound("warning");
+            this.notify("warning");
+
+            return;
+        }
+
+        const questionType =
+            type ||
+            this.detectQuestionType(
+                question
+            );
+
+        const suspect =
+            this.state.currentSuspect;
+
+        this.addMessage(
+            "det",
+            question ||
+                this.questionText(
+                    questionType
+                )
+        );
+
+        this.state.questionsLeft -= 1;
+
+        const badge =
+            document.getElementById(
+                "questions-left-badge"
+            );
+
+        if (badge) {
+            badge.textContent =
+                `${this.state.questionsLeft}/${this.getQuestionLimit()}`;
+        }
+
+        if (input) {
+            input.value = "";
+        }
+
+        const amount =
+            suspect?.guilty ? 14 : 5;
+
+        this.addSuspicion(amount);
+
+        setTimeout(() => {
+            const answer =
+                this.getSuspectAnswer(
+                    questionType,
+                    suspect
+                );
+
+            this.addMessage(
+                "sus",
+                answer
+            );
+
+            this.playSound("message");
+        }, 260);
+
+        this.playSound("question");
+        this.tap("medium");
+    },
+
+    getSuspectAnswer: function(type, suspect) {
+        if (!suspect) {
+            return AIEngine.getAnswer(
+                type,
+                null
+            );
+        }
+
+        if (type === "alibi") {
+            return suspect.alibi;
+        }
+
+        if (type === "motive") {
+            return `Мой возможный мотив — ${suspect.motive}. Но это не означает, что я виновен.`;
+        }
+
+        if (type === "relation") {
+            return suspect.relation;
+        }
+
+        if (type === "clue") {
+            return `${suspect.clueReaction} ${suspect.evidence}`;
+        }
+
+        return AIEngine.getAnswer(
+            type,
+            suspect
+        );
+    },
+    detectQuestionType: function(question) {
+        const text =
+            String(question || "")
+                .toLowerCase();
+
+        if (
+            text.includes("где") ||
+            text.includes("алиби") ||
+            text.includes("находил")
+        ) {
+            return "alibi";
+        }
+
+        if (
+            text.includes("зачем") ||
+            text.includes("мотив") ||
+            text.includes("почему")
+        ) {
+            return "motive";
+        }
+
+        if (
+            text.includes("улика") ||
+            text.includes("бокал") ||
+            text.includes("ключ") ||
+            text.includes("записк") ||
+            text.includes("камера") ||
+            text.includes("отпечат")
+        ) {
+            return "clue";
+        }
+
+        if (
+            text.includes("жертв") ||
+            text.includes("отношен") ||
+            text.includes("знаком")
+        ) {
+            return "relation";
+        }
+
+        return "default";
+    },
+
+    questionText: function(type) {
+        const texts = {
+            alibi:
+                "Где вы были во время преступления?",
+
+            motive:
+                "Какой у вас был мотив?",
+
+            clue:
+                "Что вы знаете об этой улике?",
+
+            relation:
+                "Какие у вас были отношения с жертвой?",
+
+            default:
+                "Что вы можете рассказать?"
+        };
+
+        return texts[type] || texts.default;
+    },
+
+    addMessage: function(type, text) {
+        const chat =
+            document.getElementById(
+                "chat-box"
+            );
+
+        if (!chat) {
+            return;
+        }
+
+        const message =
+            document.createElement("div");
+
+        message.className =
+            `message ${type}`;
+
+        message.textContent =
+            text;
+
+        chat.appendChild(message);
+        chat.scrollTop =
+            chat.scrollHeight;
+    },
+
+    buyHint: function() {
+        if (this.state.hints <= 0) {
+            this.addMessage(
+                "sus",
+                "Бесплатные подсказки закончились."
+            );
+
+            this.playSound("warning");
+            this.notify("warning");
+
+            return;
+        }
+
+        const hint =
+            this.state.currentCase?.hint;
+
+        if (!hint) {
+            return;
+        }
+
+        this.state.hints -= 1;
+
+        this.save();
+        this.updateHeader();
+
+        this.addMessage(
+            "sus",
+            `💡 Анализ ИИ: ${hint}`
+        );
+
+        this.playSound("hint");
+        this.notify("success");
+    },
+
+    makeVerdict: function(index) {
+        const suspects =
+            this.state.currentCase?.suspects ||
+            [];
+
+        const selected =
+            suspects[index];
+
+        if (!selected) {
+            return;
+        }
+
+        if (selected.guilty) {
+            const oldLevel =
+                this.state.level;
+
+            this.state.level += 1;
+
+            let reward = 0;
+
+            if (
+                this.state.level % 10 === 0 &&
+                this.state.level !== oldLevel
+            ) {
+                this.state.hints += 1;
+                reward = 1;
+            }
+
+            this.save();
+            this.updateHeader();
+
+            this.showResult(
+                true,
+                selected.name,
+                reward
+            );
+
+            this.playSound("success");
+            this.notify("success");
+        } else {
+            this.state.lives -= 1;
+
+            if (this.state.lives < 0) {
+                this.state.lives = 0;
+            }
+
+            this.save();
+            this.updateHeader();
+
+            this.showResult(
+                false,
+                selected.name,
+                0
+            );
+
+            this.playSound("error");
+            this.notify("error");
+        }
+    },
+
+    showResult: function(
+        success,
+        selectedName,
+        reward
+    ) {
+        const icon =
+            document.getElementById(
+                "result-icon"
+            );
+
+        const title =
+            document.getElementById(
+                "result-title"
+            );
+
+        const text =
+            document.getElementById(
+                "result-text"
+            );
+
+        const player =
+            document.getElementById(
+                "result-player"
+            );
+
+        const level =
+            document.getElementById(
+                "result-level"
+            );
+
+        const lives =
+            document.getElementById(
+                "result-lives"
+            );
+
+        if (icon) {
+            icon.textContent =
+                success ? "🎯" : "❌";
+        }
+
+        if (title) {
+            title.textContent =
+                success
+                    ? "Дело раскрыто"
+                    : "Ошибка обвинения";
+        }
+
+        if (text) {
+            if (success && reward > 0) {
+                text.textContent =
+                    `Вы правильно определили преступника: ${selectedName}. ` +
+                    `Награда за уровень ${this.state.level}: ` +
+                    `+${reward} бесплатная подсказка.`;
+            } else if (success) {
+                text.textContent =
+                    `Вы правильно определили преступника: ${selectedName}.`;
+            } else {
+                text.textContent =
+                    `Вы обвинили ${selectedName}, но это был неправильный выбор.`;
+            }
+        }
+
+        if (player) {
+            player.textContent =
+                this.state.playerName;
+        }
+
+        if (level) {
+            level.textContent =
+                this.state.level;
+        }
+
+        if (lives) {
+            lives.textContent =
+                `${this.state.lives}/5`;
+        }
+
+        this.openScreen(
+            "screen-result"
+        );
+    },
+    initAudio: function() {
+        if (!this.state.soundEnabled) {
+            return;
+        }
+
+        try {
+            const AudioContext =
+                window.AudioContext ||
+                window.webkitAudioContext;
+
+            if (!AudioContext) {
+                return;
+            }
+
+            if (!this.audio.context) {
+                this.audio.context =
+                    new AudioContext();
+            }
+
+            if (
+                this.audio.context.state ===
+                "suspended"
+            ) {
+                this.audio.context.resume();
+            }
+        } catch (error) {}
+    },
+
+    playSound: function(type) {
+        if (!this.state.soundEnabled) {
+            return;
+        }
+
+        try {
+            this.initAudio();
+
+            const context =
+                this.audio.context;
+
+            if (!context) {
+                return;
+            }
+
+            const sounds = {
+                click: {
+                    frequency: 430,
+                    duration: 0.04,
+                    volume: 0.035,
+                    wave: "sine"
+                },
+
+                start: {
+                    frequency: 560,
+                    duration: 0.14,
+                    volume: 0.06,
+                    wave: "sine"
+                },
+
+                question: {
+                    frequency: 250,
+                    duration: 0.07,
+                    volume: 0.045,
+                    wave: "triangle"
+                },
+
+                message: {
+                    frequency: 640,
+                    duration: 0.06,
+                    volume: 0.035,
+                    wave: "sine"
+                },
+
+                hint: {
+                    frequency: 760,
+                    duration: 0.18,
+                    volume: 0.07,
+                    wave: "sine"
+                },
+
+                success: {
+                    frequency: 820,
+                    duration: 0.22,
+                    volume: 0.08,
+                    wave: "triangle"
+                },
+
+                warning: {
+                    frequency: 180,
+                    duration: 0.16,
+                    volume: 0.06,
+                    wave: "sawtooth"
+                },
+
+                error: {
+                    frequency: 120,
+                    duration: 0.28,
+                    volume: 0.08,
+                    wave: "square"
+                }
+            };
+
+            const sound =
+                sounds[type] ||
+                sounds.click;
+
+            const oscillator =
+                context.createOscillator();
+
+            const gain =
+                context.createGain();
+
+            oscillator.type =
+                sound.wave;
+
+            oscillator.frequency.setValueAtTime(
+                sound.frequency,
+                context.currentTime
+            );
+
+            gain.gain.setValueAtTime(
+                0,
+                context.currentTime
+            );
+
+            gain.gain.linearRampToValueAtTime(
+                sound.volume,
+                context.currentTime + 0.01
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.001,
+                context.currentTime +
+                    sound.duration
+            );
+
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+
+            oscillator.start();
+
+            oscillator.stop(
+                context.currentTime +
+                    sound.duration +
+                    0.02
+            );
+        } catch (error) {}
+    },
+
+    toggleSound: function() {
+        this.state.soundEnabled =
+            !this.state.soundEnabled;
+
+        if (this.state.soundEnabled) {
+            this.initAudio();
+            this.playSound("success");
+        }
+
+        this.save();
+        this.updateSoundButton();
+    },
+
+    updateSoundButton: function() {
+        const button =
+            document.getElementById(
+                "sound-toggle"
+            );
+
+        if (button) {
+            button.textContent =
+                this.state.soundEnabled
+                    ? "🔊 Звук включён"
+                    : "🔇 Звук выключен";
+        }
+    },
+
+    tap: function(style = "light") {
+        try {
+            this.tg?.HapticFeedback?.impactOccurred(
+                style
+            );
+        } catch (error) {}
+    },
+
+    notify: function(type = "success") {
+        try {
+            this.tg?.HapticFeedback?.notificationOccurred(
+                type
+            );
+        } catch (error) {}
+    },
+
+    escapeHTML: function(value) {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+};
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        Game.init();
+    }
+);
