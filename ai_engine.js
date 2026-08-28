@@ -1,58 +1,164 @@
 const AIEngine = {
-    answers: {
-        alibi: [
-            "Я уже говорил, где находился. Не собираюсь повторять это снова.",
-            "Моё алиби подтверждено. Проверьте записи с камер.",
-            "В тот момент я был далеко от места преступления.",
-            "Вы действительно думаете, что я настолько глуп, чтобы нарушить собственное алиби?",
-            "Я был занят своими делами и не приближался к месту преступления."
-        ],
+  state: {
+    currentChapter: Number(localStorage.getItem("det_current_chapter")) || 1,
+    chapterProgress: Number(localStorage.getItem("det_chapter_progress")) || 0,
+    investigationPoints: Number(localStorage.getItem("det_investigation_points")) || 20,
 
-        motive: [
-            "У меня не было причин желать ему смерти.",
-            "Наши отношения были сложными, но это не делает меня убийцей.",
-            "Мотив? У каждого в этом деле был свой интерес.",
-            "Не пытайтесь приписать мне чужие проблемы.",
-            "Да, между нами был конфликт, но конфликт ещё не означает преступление."
-        ],
+    softHintBaseCost: Number(localStorage.getItem("det_soft_hint_base_cost")) || 5,
+    hardHintBaseCost: Number(localStorage.getItem("det_hard_hint_base_cost")) || 15,
+    softHintMultiplier: Number(localStorage.getItem("det_soft_hint_multiplier")) || 1.35,
+    hardHintMultiplier: Number(localStorage.getItem("det_hard_hint_multiplier")) || 1.45,
 
-        clue: [
-            "Эта улика не доказывает мою вину.",
-            "Я впервые вижу этот предмет.",
-            "Кто угодно мог оставить это на месте преступления.",
-            "Вы слишком быстро делаете выводы.",
-            "На этой улике нет ничего, что напрямую связывало бы меня с преступлением."
-        ],
+    chapterHintMultiplier: Number(localStorage.getItem("det_chapter_hint_multiplier")) || 0.25,
+    maxChapterHintMultiplier: Number(localStorage.getItem("det_max_chapter_hint_multiplier")) || 2.0,
 
-        relation: [
-            "Мы были знакомы по работе.",
-            "Он доверял мне, но это не значит, что я хотел ему навредить.",
-            "Наши отношения закончились задолго до этого события.",
-            "Я не обязан рассказывать все подробности личной жизни.",
-            "Мы пересекались, но близкими людьми не были."
-        ],
+    softHintsUsed: Number(localStorage.getItem("det_soft_hints_used")) || 0,
+    hardHintsUsed: Number(localStorage.getItem("det_hard_hints_used")) || 0,
 
-        default: [
-            "Я не понимаю, к чему вы клоните.",
-            "Это звучит как предположение, а не доказательство.",
-            "Задайте конкретный вопрос.",
-            "Мне нечего добавить.",
-            "Вы задаёте слишком общие вопросы."
-        ]
-    },
+    softHintCooldownMs: Number(localStorage.getItem("det_soft_hint_cooldown_ms")) || 60000,
+    lastSoftHintAt: Number(localStorage.getItem("det_last_soft_hint_at")) || 0,
 
-    getAnswer: function(type, suspect) {
-        const list =
-            this.answers[type] || this.answers.default;
+    stuckLevel: Number(localStorage.getItem("det_stuck_level")) || 0,
+    hintHistory: (() => {
+      try {
+        return JSON.parse(localStorage.getItem("det_hint_history")) || [];
+      } catch (e) {
+        return [];
+      }
+    })()
+  },
 
-        let answer =
-            list[Math.floor(Math.random() * list.length)];
+  save() {
+    const s = this.state;
+    localStorage.setItem("det_current_chapter", String(s.currentChapter));
+    localStorage.setItem("det_chapter_progress", String(s.chapterProgress));
+    localStorage.setItem("det_investigation_points", String(s.investigationPoints));
 
-        if (suspect && suspect.suspicion >= 80) {
-            answer +=
-                " Вы явно пытаетесь сделать меня главным подозреваемым.";
-        }
+    localStorage.setItem("det_soft_hint_base_cost", String(s.softHintBaseCost));
+    localStorage.setItem("det_hard_hint_base_cost", String(s.hardHintBaseCost));
+    localStorage.setItem("det_soft_hint_multiplier", String(s.softHintMultiplier));
+    localStorage.setItem("det_hard_hint_multiplier", String(s.hardHintMultiplier));
 
-        return answer;
+    localStorage.setItem("det_chapter_hint_multiplier", String(s.chapterHintMultiplier));
+    localStorage.setItem("det_max_chapter_hint_multiplier", String(s.maxChapterHintMultiplier));
+
+    localStorage.setItem("det_soft_hints_used", String(s.softHintsUsed));
+    localStorage.setItem("det_hard_hints_used", String(s.hardHintsUsed));
+
+    localStorage.setItem("det_soft_hint_cooldown_ms", String(s.softHintCooldownMs));
+    localStorage.setItem("det_last_soft_hint_at", String(s.lastSoftHintAt));
+
+    localStorage.setItem("det_stuck_level", String(s.stuckLevel));
+    localStorage.setItem("det_hint_history", JSON.stringify(s.hintHistory));
+  },
+
+  getChapterMultiplier() {
+    const c = this.state.currentChapter || 1;
+    return Math.min(this.state.maxChapterHintMultiplier, 1 + (c - 1) * this.state.chapterHintMultiplier);
+  },
+
+  getSoftHintCost() {
+    return Math.ceil(
+      this.state.softHintBaseCost *
+      this.getChapterMultiplier() *
+      Math.pow(this.state.softHintMultiplier, this.state.softHintsUsed)
+    );
+  },
+
+  getHardHintCost() {
+    return Math.ceil(
+      this.state.hardHintBaseCost *
+      this.getChapterMultiplier() *
+      Math.pow(this.state.hardHintMultiplier, this.state.hardHintsUsed)
+    );
+  },
+
+  canUseSoftHint() {
+    return Date.now() - (this.state.lastSoftHintAt || 0) >= this.state.softHintCooldownMs;
+  },
+
+  getSoftHintCooldownLeft() {
+    const elapsed = Date.now() - (this.state.lastSoftHintAt || 0);
+    return Math.max(0, this.state.softHintCooldownMs - elapsed);
+  },
+
+  getHintByStuckLevel() {
+    const level = this.state.stuckLevel || 0;
+
+    if (level === 1) return { type: "soft", text: "Проверь, кто имел доступ к месту преступления." };
+    if (level === 2) return { type: "soft", text: "Сравни алиби подозреваемых с временем происшествия." };
+    if (level === 3) return { type: "hard", text: "Одна из найденных улик противоречит словам главного подозреваемого." };
+    if (level >= 4) return { type: "hard", text: "Выбери подозреваемого с самым слабым алиби и проверь его через контр-улику." };
+    return null;
+  },
+
+  spendInvestigationPoints(cost) {
+    if ((this.state.investigationPoints || 0) < cost) return false;
+    this.state.investigationPoints -= cost;
+    return true;
+  },
+
+  setProgress(value) {
+    const v = Math.max(0, Math.min(100, Number(value) || 0));
+    this.state.chapterProgress = v;
+
+    if (v < 25) this.state.stuckLevel = 1;
+    else if (v < 50) this.state.stuckLevel = 2;
+    else if (v < 75) this.state.stuckLevel = 3;
+    else this.state.stuckLevel = 4;
+
+    this.save();
+  },
+
+  advanceChapter() {
+    this.state.currentChapter += 1;
+    this.state.softHintsUsed = 0;
+    this.state.hardHintsUsed = 0;
+    this.state.chapterProgress = 0;
+    this.state.stuckLevel = 0;
+    this.save();
+  },
+
+  requestSoftHint() {
+    if (!this.canUseSoftHint()) {
+      return { ok: false, reason: "cooldown", remaining: Math.ceil(this.getSoftHintCooldownLeft() / 1000) };
     }
+
+    const cost = this.getSoftHintCost();
+    if (!this.spendInvestigationPoints(cost)) {
+      return { ok: false, reason: "points", cost };
+    }
+
+    const hint = this.getHintByStuckLevel();
+    if (!hint) return { ok: false, reason: "nohint" };
+
+    this.state.lastSoftHintAt = Date.now();
+    this.state.softHintsUsed += 1;
+    this.state.stuckLevel = Math.min(4, (this.state.stuckLevel || 0) + 1);
+
+    this.state.hintHistory.unshift(`Мягкая (${cost}): ${hint.text}`);
+    this.state.hintHistory = this.state.hintHistory.slice(0, 10);
+
+    this.save();
+    return { ok: true, hint, cost };
+  },
+
+  requestHardHint() {
+    const cost = this.getHardHintCost();
+    if (!this.spendInvestigationPoints(cost)) {
+      return { ok: false, reason: "points", cost };
+    }
+
+    const hint = this.getHintByStuckLevel();
+    if (!hint) return { ok: false, reason: "nohint" };
+
+    this.state.hardHintsUsed += 1;
+    this.state.stuckLevel = Math.min(4, (this.state.stuckLevel || 0) + 1);
+
+    this.state.hintHistory.unshift(`Жёсткая (${cost}): ${hint.text}`);
+    this.state.hintHistory = this.state.hintHistory.slice(0, 10);
+
+    this.save();
+    return { ok: true, hint, cost };
+  }
 };
