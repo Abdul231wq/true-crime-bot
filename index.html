@@ -1,59 +1,158 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Investigation Hint System</title>
-  <link rel="stylesheet" href="css.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>True Crime Bot</title>
+
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div class="wrap">
-    <div class="panel">
-      <h1 style="margin-top:0">Система подсказок</h1>
+  <main class="app">
 
-      <div class="kpi">
-        <div>Глава: <span id="uiChapter">1</span></div>
-        <div>Прогресс: <span id="uiProgress">0%</span></div>
-        <div>Очки расследования: <span id="uiPoints">0</span></div>
-        <div>Уровень тупика: <span id="uiStuck">0</span></div>
+    <header class="topbar">
+      <div>
+        <h1>True Crime Bot</h1>
+        <p class="subtitle">Детективное расследование</p>
       </div>
 
-      <div class="row" style="margin-top:12px">
-        <label>Прогресс главы <input id="progressInput" type="number" min="0" max="100" value="0"></label>
-        <button id="applyProgressBtn">Применить</button>
-        <button id="nextChapterBtn">Следующая глава</button>
-        <button id="softHintBtn">Мягкая подсказка</button>
-        <button id="hardHintBtn">Жёсткая подсказка</button>
+      <div class="status">
+        <span>Глава: <b id="uiChapter">1</b></span>
+        <span>Прогресс: <b id="uiProgress">0%</b></span>
+        <span>Очки: <b id="uiPoints">20</b></span>
+        <span>Тупик: <b id="uiStuck">0</b></span>
       </div>
-    </div>
+    </header>
 
-    <div class="panel">
-      <h2 style="margin-top:0">Стоимость</h2>
-      <div class="row">
-        <div>Мягкая: <span id="softCostText"></span></div>
-        <div>Жёсткая: <span id="hardCostText"></span></div>
-        <div class="small" id="cooldownText"></div>
+    <section class="panel chapter-panel">
+      <h2>Прогресс главы</h2>
+
+      <div class="progress-line">
+        <div id="chapterProgressBar" class="progress-bar"></div>
       </div>
-    </div>
 
-    <div class="panel">
-      <h2 style="margin-top:0">Подсказка</h2>
-      <div id="hintBox" class="muted">Пока подсказка не запрошена.</div>
+      <div class="chapter-controls">
+        <label for="progressInput">Процент:</label>
+
+        <input
+          id="progressInput"
+          type="number"
+          min="0"
+          max="100"
+          value="0"
+        >
+
+        <button id="applyProgressBtn" type="button">
+          Применить
+        </button>
+
+        <button id="nextChapterBtn" type="button">
+          Следующая глава
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Подсказки</h2>
+
+      <div class="hint-costs">
+        <div class="cost-card soft-cost">
+          <span>Мягкая подсказка</span>
+          <strong><span id="softCostText">5</span> очков</strong>
+        </div>
+
+        <div class="cost-card hard-cost">
+          <span>Жёсткая подсказка</span>
+          <strong><span id="hardCostText">15</span> очков</strong>
+        </div>
+      </div>
+
+      <p id="cooldownText" class="cooldown-text">
+        Мягкая подсказка доступна сейчас.
+      </p>
+
+      <div class="hint-buttons">
+        <button id="softHintBtn" type="button">
+          Мягкая подсказка
+        </button>
+
+        <button id="hardHintBtn" type="button">
+          Жёсткая подсказка
+        </button>
+      </div>
+
+      <div id="hintBox" class="hint-box muted">
+        Пока подсказка не запрошена.
+      </div>
+
+      <div class="history-title">История подсказок</div>
       <div id="hintHistory" class="hint-history"></div>
-    </div>
+    </section>
 
-    <div class="panel">
-      <h2 style="margin-top:0">Доска</h2>
-      <div class="board" id="board">
-        <div class="card board-clue">Улика A</div>
-        <div class="card board-clue">Улика B</div>
-        <div class="card board-suspect">Подозреваемый 1</div>
-        <div class="card board-suspect">Подозреваемый 2</div>
+    <section class="panel">
+      <h2>Игровые действия</h2>
+
+      <div class="action-buttons">
+        <button id="findClueBtn" type="button">
+          Найти улику
+        </button>
+
+        <button id="successfulQuestionBtn" type="button">
+          Успешный допрос
+        </button>
+
+        <button id="correctHypothesisBtn" type="button">
+          Верная гипотеза
+        </button>
+
+        <button id="correctVerdictBtn" type="button">
+          Верный вердикт
+        </button>
+
+        <button id="resetBtn" type="button" class="danger-button">
+          Сбросить сохранение
+        </button>
       </div>
-    </div>
-  </div>
 
-  <script src="ai_engine.js"></script>
-  <script src="game.js"></script>
+      <div id="gameMessage" class="game-message muted">
+        Готово к расследованию.
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Доска расследования</h2>
+
+      <div id="evidenceBoard" class="evidence-board">
+        <article class="evidence-card board-clue">
+          <span class="card-type">Улика</span>
+          <h3>Улика A</h3>
+          <p>След, найденный на месте преступления.</p>
+        </article>
+
+        <article class="evidence-card board-clue">
+          <span class="card-type">Улика</span>
+          <h3>Улика B</h3>
+          <p>Несовпадение во временной линии.</p>
+        </article>
+
+        <article class="evidence-card board-suspect">
+          <span class="card-type">Подозреваемый</span>
+          <h3>Подозреваемый 1</h3>
+          <p>Алиби требует дополнительной проверки.</p>
+        </article>
+
+        <article class="evidence-card board-suspect">
+          <span class="card-type">Подозреваемый</span>
+          <h3>Подозреваемый 2</h3>
+          <p>Мотив пока не подтверждён.</p>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="./ai_engine.js"></script>
+  <script src="./game.js"></script>
 </body>
-            </html>
+</html>
