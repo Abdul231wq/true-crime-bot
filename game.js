@@ -1,4 +1,6 @@
 const Game = {
+  elements: {},
+
   init() {
     this.cacheElements();
     this.bindEvents();
@@ -11,34 +13,64 @@ const Game = {
   },
 
   cacheElements() {
-    this.uiChapter = document.getElementById("uiChapter");
-    this.uiProgress = document.getElementById("uiProgress");
-    this.uiPoints = document.getElementById("uiPoints");
-    this.uiStuck = document.getElementById("uiStuck");
+    this.elements.uiChapter =
+      document.getElementById("uiChapter");
 
-    this.progressInput = document.getElementById("progressInput");
-    this.chapterProgressBar = document.getElementById("chapterProgressBar");
+    this.elements.uiProgress =
+      document.getElementById("uiProgress");
 
-    this.softCostText = document.getElementById("softCostText");
-    this.hardCostText = document.getElementById("hardCostText");
-    this.cooldownText = document.getElementById("cooldownText");
+    this.elements.uiPoints =
+      document.getElementById("uiPoints");
 
-    this.softHintBtn = document.getElementById("softHintBtn");
-    this.hardHintBtn = document.getElementById("hardHintBtn");
+    this.elements.uiStuck =
+      document.getElementById("uiStuck");
 
-    this.hintBox = document.getElementById("hintBox");
-    this.hintHistory = document.getElementById("hintHistory");
-    this.gameMessage = document.getElementById("gameMessage");
+    this.elements.progressLabel =
+      document.getElementById("progressLabel");
+
+    this.elements.progressInput =
+      document.getElementById("progressInput");
+
+    this.elements.chapterProgressBar =
+      document.getElementById("chapterProgressBar");
+
+    this.elements.softCostText =
+      document.getElementById("softCostText");
+
+    this.elements.hardCostText =
+      document.getElementById("hardCostText");
+
+    this.elements.cooldownText =
+      document.getElementById("cooldownText");
+
+    this.elements.softHintBtn =
+      document.getElementById("softHintBtn");
+
+    this.elements.hardHintBtn =
+      document.getElementById("hardHintBtn");
+
+    this.elements.hintBox =
+      document.getElementById("hintBox");
+
+    this.elements.hintHistory =
+      document.getElementById("hintHistory");
+
+    this.elements.gameMessage =
+      document.getElementById("gameMessage");
   },
 
   bindEvents() {
     document
       .getElementById("applyProgressBtn")
       .addEventListener("click", () => {
-        const result = AIEngine.setProgress(this.progressInput.value);
+        const value =
+          this.elements.progressInput.value;
+
+        const result =
+          AIEngine.setProgress(value);
 
         this.showMessage(
-          `Прогресс главы установлен: ${result.progress}%.`
+          `Прогресс установлен: ${result.progress}%.`
         );
 
         this.syncAll();
@@ -47,31 +79,39 @@ const Game = {
     document
       .getElementById("nextChapterBtn")
       .addEventListener("click", () => {
-        const result = AIEngine.advanceChapter();
+        const result =
+          AIEngine.advanceChapter();
 
-        this.progressInput.value = 0;
+        this.elements.progressInput.value = 0;
 
         this.showMessage(
-          `Начата глава ${result.chapter}. Счётчики стоимости подсказок сброшены.`
+          `Начата глава ${result.chapter}.`
         );
 
         this.syncAll();
       });
 
-    this.softHintBtn.addEventListener("click", () => {
-      const result = AIEngine.requestSoftHint();
-      this.handleHintResult(result);
-    });
+    this.elements.softHintBtn
+      .addEventListener("click", () => {
+        const result =
+          AIEngine.requestSoftHint();
 
-    this.hardHintBtn.addEventListener("click", () => {
-      const result = AIEngine.requestHardHint();
-      this.handleHintResult(result);
-    });
+        this.handleHintResult(result);
+      });
+
+    this.elements.hardHintBtn
+      .addEventListener("click", () => {
+        const result =
+          AIEngine.requestHardHint();
+
+        this.handleHintResult(result);
+      });
 
     document
       .getElementById("findClueBtn")
       .addEventListener("click", () => {
-        const result = AIEngine.addClue();
+        const result =
+          AIEngine.addClue();
 
         this.showMessage(result.message);
         this.syncAll();
@@ -80,7 +120,8 @@ const Game = {
     document
       .getElementById("successfulQuestionBtn")
       .addEventListener("click", () => {
-        const result = AIEngine.successfulQuestion();
+        const result =
+          AIEngine.successfulQuestion();
 
         this.showMessage(result.message);
         this.syncAll();
@@ -89,7 +130,8 @@ const Game = {
     document
       .getElementById("correctHypothesisBtn")
       .addEventListener("click", () => {
-        const result = AIEngine.correctHypothesis();
+        const result =
+          AIEngine.correctHypothesis();
 
         this.showMessage(result.message);
         this.syncAll();
@@ -98,7 +140,8 @@ const Game = {
     document
       .getElementById("correctVerdictBtn")
       .addEventListener("click", () => {
-        const result = AIEngine.correctVerdict();
+        const result =
+          AIEngine.correctVerdict();
 
         this.showMessage(result.message);
         this.syncAll();
@@ -108,15 +151,19 @@ const Game = {
       .getElementById("resetBtn")
       .addEventListener("click", () => {
         const confirmed = window.confirm(
-          "Удалить весь прогресс и вернуть начальные значения?"
+          "Сбросить весь прогресс игры?"
         );
 
-        if (!confirmed) return;
+        if (!confirmed) {
+          return;
+        }
 
         AIEngine.reset();
-        this.progressInput.value = AIEngine.state.chapterProgress;
 
-        this.showMessage("Сохранение сброшено.");
+        this.showMessage(
+          "Сохранение сброшено."
+        );
+
         this.syncAll();
       });
   },
@@ -136,24 +183,30 @@ const Game = {
       }
 
       if (result.reason === "nohint") {
-        this.showMessage("Сейчас подходящей подсказки нет.");
+        this.showMessage(
+          "Сейчас подходящей подсказки нет."
+        );
       }
 
       this.syncAll();
       return;
     }
 
+    const hintName =
+      result.type === "soft"
+        ? "Мягкая"
+        : "Жёсткая";
+
     this.showMessage(
-      `${result.type === "soft" ? "Мягкая" : "Жёсткая"} подсказка использована за ${result.cost} очков.`
+      `${hintName} подсказка использована за ${result.cost} очков.`
     );
 
     this.syncAll();
-    this.highlightHintTargets();
   },
 
   syncAll() {
     this.updateHeader();
-    this.updateProgressBar();
+    this.updateProgress();
     this.updateCosts();
     this.renderHint();
     this.renderHintHistory();
@@ -165,105 +218,142 @@ const Game = {
   updateHeader() {
     const state = AIEngine.state;
 
-    this.uiChapter.textContent = state.currentChapter;
-    this.uiProgress.textContent = `${state.chapterProgress}%`;
-    this.uiPoints.textContent = state.investigationPoints;
-    this.uiStuck.textContent = state.stuckLevel;
+    this.elements.uiChapter.textContent =
+      state.currentChapter;
+
+    this.elements.uiProgress.textContent =
+      `${state.chapterProgress}%`;
+
+    this.elements.uiPoints.textContent =
+      state.investigationPoints;
+
+    this.elements.uiStuck.textContent =
+      state.stuckLevel;
   },
 
-  updateProgressBar() {
-    this.chapterProgressBar.style.width =
-      `${AIEngine.state.chapterProgress}%`;
-
-    this.progressInput.value =
+  updateProgress() {
+    const progress =
       AIEngine.state.chapterProgress;
+
+    this.elements.progressLabel.textContent =
+      `${progress}%`;
+
+    this.elements.progressInput.value =
+      progress;
+
+    this.elements.chapterProgressBar.style.width =
+      `${progress}%`;
   },
 
   updateCosts() {
-    this.softCostText.textContent =
+    this.elements.softCostText.textContent =
       AIEngine.getSoftHintCost();
 
-    this.hardCostText.textContent =
+    this.elements.hardCostText.textContent =
       AIEngine.getHardHintCost();
   },
 
   renderHint() {
-    const hint = AIEngine.getHintByStuckLevel();
+    const hint =
+      AIEngine.getHintByStuckLevel();
 
     if (!hint) {
-      this.hintBox.className = "hint-box muted";
-      this.hintBox.textContent = "Пока подсказка не запрошена.";
+      this.elements.hintBox.className =
+        "hint-box hint-box-empty";
+
+      this.elements.hintBox.textContent =
+        "Пока подсказка не запрошена.";
+
       return;
     }
 
-    this.hintBox.className =
+    this.elements.hintBox.className =
       hint.type === "soft"
         ? "hint-box hint-soft"
         : "hint-box hint-hard";
 
-    this.hintBox.textContent = hint.text;
+    this.elements.hintBox.textContent =
+      hint.text;
   },
 
   renderHintHistory() {
-    const history = AIEngine.state.hintHistory;
+    const history =
+      AIEngine.state.hintHistory;
 
-    this.hintHistory.replaceChildren();
+    this.elements.hintHistory.replaceChildren();
 
     history.forEach((item) => {
-      const row = document.createElement("div");
-      row.textContent = item;
-      this.hintHistory.appendChild(row);
+      const historyItem =
+        document.createElement("div");
+
+      historyItem.textContent = item;
+
+      this.elements.hintHistory.appendChild(
+        historyItem
+      );
     });
   },
 
   updateHintButtons() {
-    const softCost = AIEngine.getSoftHintCost();
-    const hardCost = AIEngine.getHardHintCost();
+    const state =
+      AIEngine.state;
 
-    const hasSoftPoints =
-      AIEngine.state.investigationPoints >= softCost;
+    const softCost =
+      AIEngine.getSoftHintCost();
 
-    const hasHardPoints =
-      AIEngine.state.investigationPoints >= hardCost;
+    const hardCost =
+      AIEngine.getHardHintCost();
 
-    this.softHintBtn.disabled =
-      !AIEngine.canUseSoftHint() || !hasSoftPoints;
+    const enoughForSoft =
+      state.investigationPoints >= softCost;
 
-    this.hardHintBtn.disabled =
-      !hasHardPoints;
+    const enoughForHard =
+      state.investigationPoints >= hardCost;
 
-    this.softHintBtn.textContent =
-      `Мягкая подсказка (${softCost})`;
+    this.elements.softHintBtn.disabled =
+      !AIEngine.canUseSoftHint() ||
+      !enoughForSoft;
 
-    this.hardHintBtn.textContent =
-      `Жёсткая подсказка (${hardCost})`;
+    this.elements.hardHintBtn.disabled =
+      !enoughForHard;
+
+    this.elements.softHintBtn.innerHTML =
+      `Мягкая подсказка <span class="button-subtitle">${softCost} очков</span>`;
+
+    this.elements.hardHintBtn.innerHTML =
+      `Жёсткая подсказка <span class="button-subtitle">${hardCost} очков</span>`;
   },
 
   updateCooldownText() {
     if (AIEngine.canUseSoftHint()) {
-      this.cooldownText.textContent =
+      this.elements.cooldownText.textContent =
         "Мягкая подсказка доступна сейчас.";
+
       return;
     }
 
-    const seconds = Math.ceil(
-      AIEngine.getSoftHintCooldownLeft() / 1000
-    );
+    const seconds =
+      Math.ceil(
+        AIEngine.getSoftHintCooldownLeft() / 1000
+      );
 
-    this.cooldownText.textContent =
+    this.elements.cooldownText.textContent =
       `Мягкая подсказка доступна через ${seconds} сек.`;
   },
 
   highlightHintTargets() {
-    const cards = document.querySelectorAll(
-      ".board-clue, .board-suspect"
-    );
+    const cards =
+      document.querySelectorAll(
+        ".board-clue, .board-suspect"
+      );
 
     cards.forEach((card) => {
       card.classList.remove("hint-glow");
     });
 
-    if (AIEngine.state.stuckLevel < 3) return;
+    if (AIEngine.state.stuckLevel < 3) {
+      return;
+    }
 
     cards.forEach((card) => {
       card.classList.add("hint-glow");
@@ -271,10 +361,14 @@ const Game = {
   },
 
   showMessage(message) {
-    this.gameMessage.textContent = message;
+    this.elements.gameMessage.textContent =
+      message;
   }
 };
 
-window.addEventListener("DOMContentLoaded", () => {
-  Game.init();
-});
+window.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    Game.init();
+  }
+);
