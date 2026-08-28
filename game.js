@@ -1,49 +1,151 @@
 const Game = {
   init() {
-    this.bindUI();
+    this.cacheElements();
+    this.bindEvents();
     this.syncAll();
-    setInterval(() => {
+
+    window.setInterval(() => {
       this.updateHintButtons();
       this.updateCooldownText();
     }, 1000);
   },
 
-  bindUI() {
-    document.getElementById("progressInput").value = AIEngine.state.chapterProgress;
+  cacheElements() {
+    this.uiChapter = document.getElementById("uiChapter");
+    this.uiProgress = document.getElementById("uiProgress");
+    this.uiPoints = document.getElementById("uiPoints");
+    this.uiStuck = document.getElementById("uiStuck");
 
-    document.getElementById("applyProgressBtn").addEventListener("click", () => {
-      const value = document.getElementById("progressInput").value;
-      AIEngine.setProgress(value);
-      this.syncAll();
-    });
+    this.progressInput = document.getElementById("progressInput");
+    this.chapterProgressBar = document.getElementById("chapterProgressBar");
 
-    document.getElementById("nextChapterBtn").addEventListener("click", () => {
-      AIEngine.advanceChapter();
-      document.getElementById("progressInput").value = 0;
-      this.syncAll();
-    });
+    this.softCostText = document.getElementById("softCostText");
+    this.hardCostText = document.getElementById("hardCostText");
+    this.cooldownText = document.getElementById("cooldownText");
 
-    document.getElementById("softHintBtn").addEventListener("click", () => {
+    this.softHintBtn = document.getElementById("softHintBtn");
+    this.hardHintBtn = document.getElementById("hardHintBtn");
+
+    this.hintBox = document.getElementById("hintBox");
+    this.hintHistory = document.getElementById("hintHistory");
+    this.gameMessage = document.getElementById("gameMessage");
+  },
+
+  bindEvents() {
+    document
+      .getElementById("applyProgressBtn")
+      .addEventListener("click", () => {
+        const result = AIEngine.setProgress(this.progressInput.value);
+
+        this.showMessage(
+          `Прогресс главы установлен: ${result.progress}%.`
+        );
+
+        this.syncAll();
+      });
+
+    document
+      .getElementById("nextChapterBtn")
+      .addEventListener("click", () => {
+        const result = AIEngine.advanceChapter();
+
+        this.progressInput.value = 0;
+
+        this.showMessage(
+          `Начата глава ${result.chapter}. Счётчики стоимости подсказок сброшены.`
+        );
+
+        this.syncAll();
+      });
+
+    this.softHintBtn.addEventListener("click", () => {
       const result = AIEngine.requestSoftHint();
       this.handleHintResult(result);
     });
 
-    document.getElementById("hardHintBtn").addEventListener("click", () => {
+    this.hardHintBtn.addEventListener("click", () => {
       const result = AIEngine.requestHardHint();
       this.handleHintResult(result);
     });
+
+    document
+      .getElementById("findClueBtn")
+      .addEventListener("click", () => {
+        const result = AIEngine.addClue();
+
+        this.showMessage(result.message);
+        this.syncAll();
+      });
+
+    document
+      .getElementById("successfulQuestionBtn")
+      .addEventListener("click", () => {
+        const result = AIEngine.successfulQuestion();
+
+        this.showMessage(result.message);
+        this.syncAll();
+      });
+
+    document
+      .getElementById("correctHypothesisBtn")
+      .addEventListener("click", () => {
+        const result = AIEngine.correctHypothesis();
+
+        this.showMessage(result.message);
+        this.syncAll();
+      });
+
+    document
+      .getElementById("correctVerdictBtn")
+      .addEventListener("click", () => {
+        const result = AIEngine.correctVerdict();
+
+        this.showMessage(result.message);
+        this.syncAll();
+      });
+
+    document
+      .getElementById("resetBtn")
+      .addEventListener("click", () => {
+        const confirmed = window.confirm(
+          "Удалить весь прогресс и вернуть начальные значения?"
+        );
+
+        if (!confirmed) return;
+
+        AIEngine.reset();
+        this.progressInput.value = AIEngine.state.chapterProgress;
+
+        this.showMessage("Сохранение сброшено.");
+        this.syncAll();
+      });
   },
 
   handleHintResult(result) {
     if (!result.ok) {
       if (result.reason === "cooldown") {
-        alert(`Мягкая подсказка будет доступна через ${result.remaining} сек.`);
-      } else if (result.reason === "points") {
-        alert(`Нужно ${result.cost} очков расследования.`);
+        this.showMessage(
+          `Мягкая подсказка будет доступна через ${result.remaining} сек.`
+        );
       }
+
+      if (result.reason === "points") {
+        this.showMessage(
+          `Недостаточно очков. Нужно ${result.cost}.`
+        );
+      }
+
+      if (result.reason === "nohint") {
+        this.showMessage("Сейчас подходящей подсказки нет.");
+      }
+
       this.syncAll();
       return;
     }
+
+    this.showMessage(
+      `${result.type === "soft" ? "Мягкая" : "Жёсткая"} подсказка использована за ${result.cost} очков.`
+    );
 
     this.syncAll();
     this.highlightHintTargets();
@@ -51,75 +153,128 @@ const Game = {
 
   syncAll() {
     this.updateHeader();
-    this.renderHintPanel();
+    this.updateProgressBar();
+    this.updateCosts();
+    this.renderHint();
+    this.renderHintHistory();
     this.updateHintButtons();
     this.updateCooldownText();
     this.highlightHintTargets();
   },
 
   updateHeader() {
-    document.getElementById("uiChapter").textContent = AIEngine.state.currentChapter;
-    document.getElementById("uiProgress").textContent = AIEngine.state.chapterProgress + "%";
-    document.getElementById("uiPoints").textContent = AIEngine.state.investigationPoints;
-    document.getElementById("uiStuck").textContent = AIEngine.state.stuckLevel;
+    const state = AIEngine.state;
+
+    this.uiChapter.textContent = state.currentChapter;
+    this.uiProgress.textContent = `${state.chapterProgress}%`;
+    this.uiPoints.textContent = state.investigationPoints;
+    this.uiStuck.textContent = state.stuckLevel;
   },
 
-  renderHintPanel() {
+  updateProgressBar() {
+    this.chapterProgressBar.style.width =
+      `${AIEngine.state.chapterProgress}%`;
+
+    this.progressInput.value =
+      AIEngine.state.chapterProgress;
+  },
+
+  updateCosts() {
+    this.softCostText.textContent =
+      AIEngine.getSoftHintCost();
+
+    this.hardCostText.textContent =
+      AIEngine.getHardHintCost();
+  },
+
+  renderHint() {
     const hint = AIEngine.getHintByStuckLevel();
 
-    document.getElementById("softCostText").textContent = AIEngine.getSoftHintCost();
-    document.getElementById("hardCostText").textContent = AIEngine.getHardHintCost();
-
-    const hintBox = document.getElementById("hintBox");
-    if (hint) {
-      hintBox.className = hint.type === "soft" ? "hint-soft" : "hint-hard";
-      hintBox.textContent = hint.text;
-    } else {
-      hintBox.className = "muted";
-      hintBox.textContent = "Пока подсказка не нужна.";
+    if (!hint) {
+      this.hintBox.className = "hint-box muted";
+      this.hintBox.textContent = "Пока подсказка не запрошена.";
+      return;
     }
 
-    const historyBox = document.getElementById("hintHistory");
-    historyBox.innerHTML = AIEngine.state.hintHistory.length
-      ? AIEngine.state.hintHistory.map(h => `<div>${this.escapeHTML(h)}</div>`).join("")
-      : "";
+    this.hintBox.className =
+      hint.type === "soft"
+        ? "hint-box hint-soft"
+        : "hint-box hint-hard";
+
+    this.hintBox.textContent = hint.text;
+  },
+
+  renderHintHistory() {
+    const history = AIEngine.state.hintHistory;
+
+    this.hintHistory.replaceChildren();
+
+    history.forEach((item) => {
+      const row = document.createElement("div");
+      row.textContent = item;
+      this.hintHistory.appendChild(row);
+    });
   },
 
   updateHintButtons() {
-    const softBtn = document.getElementById("softHintBtn");
-    const hardBtn = document.getElementById("hardHintBtn");
     const softCost = AIEngine.getSoftHintCost();
     const hardCost = AIEngine.getHardHintCost();
 
-    softBtn.disabled = !AIEngine.canUseSoftHint() || AIEngine.state.investigationPoints < softCost;
-    hardBtn.disabled = AIEngine.state.investigationPoints < hardCost;
+    const hasSoftPoints =
+      AIEngine.state.investigationPoints >= softCost;
 
-    softBtn.textContent = `Мягкая подсказка (${softCost})`;
-    hardBtn.textContent = `Жёсткая подсказка (${hardCost})`;
+    const hasHardPoints =
+      AIEngine.state.investigationPoints >= hardCost;
+
+    this.softHintBtn.disabled =
+      !AIEngine.canUseSoftHint() || !hasSoftPoints;
+
+    this.hardHintBtn.disabled =
+      !hasHardPoints;
+
+    this.softHintBtn.textContent =
+      `Мягкая подсказка (${softCost})`;
+
+    this.hardHintBtn.textContent =
+      `Жёсткая подсказка (${hardCost})`;
   },
 
   updateCooldownText() {
-    const el = document.getElementById("cooldownText");
-    el.textContent = AIEngine.canUseSoftHint()
-      ? "Мягкая подсказка доступна сейчас."
-      : `Мягкая подсказка доступна через ${Math.ceil(AIEngine.getSoftHintCooldownLeft() / 1000)} сек.`;
+    if (AIEngine.canUseSoftHint()) {
+      this.cooldownText.textContent =
+        "Мягкая подсказка доступна сейчас.";
+      return;
+    }
+
+    const seconds = Math.ceil(
+      AIEngine.getSoftHintCooldownLeft() / 1000
+    );
+
+    this.cooldownText.textContent =
+      `Мягкая подсказка доступна через ${seconds} сек.`;
   },
 
   highlightHintTargets() {
-    document.querySelectorAll(".board-clue, .board-suspect").forEach(el => el.classList.remove("hint-glow"));
-    if ((AIEngine.state.stuckLevel || 0) >= 3) {
-      document.querySelectorAll(".board-clue, .board-suspect").forEach(el => el.classList.add("hint-glow"));
-    }
+    const cards = document.querySelectorAll(
+      ".board-clue, .board-suspect"
+    );
+
+    cards.forEach((card) => {
+      card.classList.remove("hint-glow");
+    });
+
+    if (AIEngine.state.stuckLevel < 3) return;
+
+    cards.forEach((card) => {
+      card.classList.add("hint-glow");
+    });
   },
 
-  escapeHTML(str) {
-    return String(str)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  showMessage(message) {
+    this.gameMessage.textContent = message;
   }
 };
 
-window.addEventListener("DOMContentLoaded", () => Game.init());
+window.addEventListener("DOMContentLoaded", () => {
+  Game.init();
+});
