@@ -1,164 +1,463 @@
 const AIEngine = {
-  state: {
-    currentChapter: Number(localStorage.getItem("det_current_chapter")) || 1,
-    chapterProgress: Number(localStorage.getItem("det_chapter_progress")) || 0,
-    investigationPoints: Number(localStorage.getItem("det_investigation_points")) || 20,
+  STORAGE_PREFIX: "true_crime_bot_",
 
-    softHintBaseCost: Number(localStorage.getItem("det_soft_hint_base_cost")) || 5,
-    hardHintBaseCost: Number(localStorage.getItem("det_hard_hint_base_cost")) || 15,
-    softHintMultiplier: Number(localStorage.getItem("det_soft_hint_multiplier")) || 1.35,
-    hardHintMultiplier: Number(localStorage.getItem("det_hard_hint_multiplier")) || 1.45,
+  defaults: {
+    currentChapter: 1,
+    chapterProgress: 0,
+    investigationPoints: 20,
 
-    chapterHintMultiplier: Number(localStorage.getItem("det_chapter_hint_multiplier")) || 0.25,
-    maxChapterHintMultiplier: Number(localStorage.getItem("det_max_chapter_hint_multiplier")) || 2.0,
+    softHintBaseCost: 5,
+    hardHintBaseCost: 15,
 
-    softHintsUsed: Number(localStorage.getItem("det_soft_hints_used")) || 0,
-    hardHintsUsed: Number(localStorage.getItem("det_hard_hints_used")) || 0,
+    softHintMultiplier: 1.35,
+    hardHintMultiplier: 1.45,
 
-    softHintCooldownMs: Number(localStorage.getItem("det_soft_hint_cooldown_ms")) || 60000,
-    lastSoftHintAt: Number(localStorage.getItem("det_last_soft_hint_at")) || 0,
+    chapterHintMultiplier: 0.25,
+    maxChapterHintMultiplier: 2,
 
-    stuckLevel: Number(localStorage.getItem("det_stuck_level")) || 0,
-    hintHistory: (() => {
-      try {
-        return JSON.parse(localStorage.getItem("det_hint_history")) || [];
-      } catch (e) {
-        return [];
-      }
-    })()
+    softHintsUsed: 0,
+    hardHintsUsed: 0,
+
+    softHintCooldownMs: 60000,
+    lastSoftHintAt: 0,
+
+    stuckLevel: 0,
+    cluesFound: 0,
+    successfulQuestions: 0,
+    correctHypotheses: 0,
+    correctVerdicts: 0,
+
+    hintHistory: []
+  },
+
+  state: {},
+
+  init() {
+    this.state = {
+      currentChapter: this.readNumber("currentChapter", this.defaults.currentChapter),
+      chapterProgress: this.readNumber("chapterProgress", this.defaults.chapterProgress),
+      investigationPoints: this.readNumber("investigationPoints", this.defaults.investigationPoints),
+
+      softHintBaseCost: this.readNumber("softHintBaseCost", this.defaults.softHintBaseCost),
+      hardHintBaseCost: this.readNumber("hardHintBaseCost", this.defaults.hardHintBaseCost),
+
+      softHintMultiplier: this.readNumber("softHintMultiplier", this.defaults.softHintMultiplier),
+      hardHintMultiplier: this.readNumber("hardHintMultiplier", this.defaults.hardHintMultiplier),
+
+      chapterHintMultiplier: this.readNumber(
+        "chapterHintMultiplier",
+        this.defaults.chapterHintMultiplier
+      ),
+
+      maxChapterHintMultiplier: this.readNumber(
+        "maxChapterHintMultiplier",
+        this.defaults.maxChapterHintMultiplier
+      ),
+
+      softHintsUsed: this.readNumber("softHintsUsed", this.defaults.softHintsUsed),
+      hardHintsUsed: this.readNumber("hardHintsUsed", this.defaults.hardHintsUsed),
+
+      softHintCooldownMs: this.readNumber(
+        "softHintCooldownMs",
+        this.defaults.softHintCooldownMs
+      ),
+
+      lastSoftHintAt: this.readNumber(
+        "lastSoftHintAt",
+        this.defaults.lastSoftHintAt
+      ),
+
+      stuckLevel: this.readNumber("stuckLevel", this.defaults.stuckLevel),
+      cluesFound: this.readNumber("cluesFound", this.defaults.cluesFound),
+      successfulQuestions: this.readNumber(
+        "successfulQuestions",
+        this.defaults.successfulQuestions
+      ),
+      correctHypotheses: this.readNumber(
+        "correctHypotheses",
+        this.defaults.correctHypotheses
+      ),
+      correctVerdicts: this.readNumber(
+        "correctVerdicts",
+        this.defaults.correctVerdicts
+      ),
+
+      hintHistory: this.readJSON("hintHistory", this.defaults.hintHistory)
+    };
+
+    this.normalizeState();
+    this.updateStuckLevelFromProgress();
+    this.save();
+
+    return this.state;
+  },
+
+  storageKey(name) {
+    return `${this.STORAGE_PREFIX}${name}`;
+  },
+
+  readNumber(name, fallback) {
+    const raw = localStorage.getItem(this.storageKey(name));
+    if (raw === null) return fallback;
+
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : fallback;
+  },
+
+  readJSON(name, fallback) {
+    const raw = localStorage.getItem(this.storageKey(name));
+    if (raw === null) return fallback;
+
+    try {
+      const value = JSON.parse(raw);
+      return Array.isArray(value) ? value : fallback;
+    } catch (error) {
+      return fallback;
+    }
   },
 
   save() {
+    Object.entries(this.state).forEach(([key, value]) => {
+      localStorage.setItem(
+        this.storageKey(key),
+        typeof value === "string" ? value : JSON.stringify(value)
+      );
+    });
+  },
+
+  normalizeState() {
     const s = this.state;
-    localStorage.setItem("det_current_chapter", String(s.currentChapter));
-    localStorage.setItem("det_chapter_progress", String(s.chapterProgress));
-    localStorage.setItem("det_investigation_points", String(s.investigationPoints));
 
-    localStorage.setItem("det_soft_hint_base_cost", String(s.softHintBaseCost));
-    localStorage.setItem("det_hard_hint_base_cost", String(s.hardHintBaseCost));
-    localStorage.setItem("det_soft_hint_multiplier", String(s.softHintMultiplier));
-    localStorage.setItem("det_hard_hint_multiplier", String(s.hardHintMultiplier));
+    s.currentChapter = Math.max(1, Math.floor(Number(s.currentChapter) || 1));
+    s.chapterProgress = this.clamp(s.chapterProgress, 0, 100);
+    s.investigationPoints = Math.max(0, Math.floor(Number(s.investigationPoints) || 0));
 
-    localStorage.setItem("det_chapter_hint_multiplier", String(s.chapterHintMultiplier));
-    localStorage.setItem("det_max_chapter_hint_multiplier", String(s.maxChapterHintMultiplier));
+    s.softHintsUsed = Math.max(0, Math.floor(Number(s.softHintsUsed) || 0));
+    s.hardHintsUsed = Math.max(0, Math.floor(Number(s.hardHintsUsed) || 0));
 
-    localStorage.setItem("det_soft_hints_used", String(s.softHintsUsed));
-    localStorage.setItem("det_hard_hints_used", String(s.hardHintsUsed));
+    s.stuckLevel = this.clamp(Math.floor(Number(s.stuckLevel) || 0), 0, 4);
+    s.hintHistory = Array.isArray(s.hintHistory) ? s.hintHistory : [];
+  },
 
-    localStorage.setItem("det_soft_hint_cooldown_ms", String(s.softHintCooldownMs));
-    localStorage.setItem("det_last_soft_hint_at", String(s.lastSoftHintAt));
-
-    localStorage.setItem("det_stuck_level", String(s.stuckLevel));
-    localStorage.setItem("det_hint_history", JSON.stringify(s.hintHistory));
+  clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
   },
 
   getChapterMultiplier() {
-    const c = this.state.currentChapter || 1;
-    return Math.min(this.state.maxChapterHintMultiplier, 1 + (c - 1) * this.state.chapterHintMultiplier);
+    const chapter = Math.max(1, this.state.currentChapter || 1);
+
+    const multiplier =
+      1 + (chapter - 1) * this.state.chapterHintMultiplier;
+
+    return Math.min(
+      this.state.maxChapterHintMultiplier,
+      multiplier
+    );
   },
 
   getSoftHintCost() {
-    return Math.ceil(
-      this.state.softHintBaseCost *
-      this.getChapterMultiplier() *
-      Math.pow(this.state.softHintMultiplier, this.state.softHintsUsed)
+    const baseCost = this.state.softHintBaseCost;
+    const chapterMultiplier = this.getChapterMultiplier();
+    const usageMultiplier = Math.pow(
+      this.state.softHintMultiplier,
+      this.state.softHintsUsed
     );
+
+    return Math.max(1, Math.ceil(
+      baseCost * chapterMultiplier * usageMultiplier
+    ));
   },
 
   getHardHintCost() {
-    return Math.ceil(
-      this.state.hardHintBaseCost *
-      this.getChapterMultiplier() *
-      Math.pow(this.state.hardHintMultiplier, this.state.hardHintsUsed)
+    const baseCost = this.state.hardHintBaseCost;
+    const chapterMultiplier = this.getChapterMultiplier();
+    const usageMultiplier = Math.pow(
+      this.state.hardHintMultiplier,
+      this.state.hardHintsUsed
     );
+
+    return Math.max(1, Math.ceil(
+      baseCost * chapterMultiplier * usageMultiplier
+    ));
   },
 
   canUseSoftHint() {
-    return Date.now() - (this.state.lastSoftHintAt || 0) >= this.state.softHintCooldownMs;
+    return this.getSoftHintCooldownLeft() <= 0;
   },
 
   getSoftHintCooldownLeft() {
-    const elapsed = Date.now() - (this.state.lastSoftHintAt || 0);
-    return Math.max(0, this.state.softHintCooldownMs - elapsed);
+    const elapsed = Date.now() - Number(this.state.lastSoftHintAt || 0);
+
+    return Math.max(
+      0,
+      this.state.softHintCooldownMs - elapsed
+    );
   },
 
   getHintByStuckLevel() {
     const level = this.state.stuckLevel || 0;
 
-    if (level === 1) return { type: "soft", text: "Проверь, кто имел доступ к месту преступления." };
-    if (level === 2) return { type: "soft", text: "Сравни алиби подозреваемых с временем происшествия." };
-    if (level === 3) return { type: "hard", text: "Одна из найденных улик противоречит словам главного подозреваемого." };
-    if (level >= 4) return { type: "hard", text: "Выбери подозреваемого с самым слабым алиби и проверь его через контр-улику." };
-    return null;
+    if (level <= 0) {
+      return {
+        type: "soft",
+        text: "Начни с проверки связей между уликами и подозреваемыми."
+      };
+    }
+
+    if (level === 1) {
+      return {
+        type: "soft",
+        text: "Проверь, кто имел доступ к месту преступления."
+      };
+    }
+
+    if (level === 2) {
+      return {
+        type: "soft",
+        text: "Сравни алиби подозреваемых с временем происшествия."
+      };
+    }
+
+    if (level === 3) {
+      return {
+        type: "hard",
+        text: "Одна из найденных улик противоречит словам главного подозреваемого."
+      };
+    }
+
+    return {
+      type: "hard",
+      text: "Выбери подозреваемого с самым слабым алиби и проверь его через контр-улику."
+    };
   },
 
   spendInvestigationPoints(cost) {
-    if ((this.state.investigationPoints || 0) < cost) return false;
-    this.state.investigationPoints -= cost;
+    const safeCost = Math.max(0, Math.floor(Number(cost) || 0));
+
+    if (this.state.investigationPoints < safeCost) {
+      return false;
+    }
+
+    this.state.investigationPoints -= safeCost;
     return true;
   },
 
-  setProgress(value) {
-    const v = Math.max(0, Math.min(100, Number(value) || 0));
-    this.state.chapterProgress = v;
+  addInvestigationPoints(amount, reason) {
+    const safeAmount = Math.max(0, Math.floor(Number(amount) || 0));
 
-    if (v < 25) this.state.stuckLevel = 1;
-    else if (v < 50) this.state.stuckLevel = 2;
-    else if (v < 75) this.state.stuckLevel = 3;
-    else this.state.stuckLevel = 4;
+    this.state.investigationPoints += safeAmount;
+    this.save();
+
+    return {
+      amount: safeAmount,
+      reason: reason || ""
+    };
+  },
+
+  addClue() {
+    this.state.cluesFound += 1;
+    this.state.investigationPoints += 2;
+    this.state.chapterProgress = this.clamp(
+      this.state.chapterProgress + 10,
+      0,
+      100
+    );
+
+    this.updateStuckLevelFromProgress();
+    this.save();
+
+    return {
+      ok: true,
+      reward: 2,
+      message: "Найдена новая улика. Получено 2 очка расследования."
+    };
+  },
+
+  successfulQuestion() {
+    this.state.successfulQuestions += 1;
+    this.state.investigationPoints += 3;
+    this.state.chapterProgress = this.clamp(
+      this.state.chapterProgress + 10,
+      0,
+      100
+    );
+
+    this.updateStuckLevelFromProgress();
+    this.save();
+
+    return {
+      ok: true,
+      reward: 3,
+      message: "Допрос дал результат. Получено 3 очка расследования."
+    };
+  },
+
+  correctHypothesis() {
+    this.state.correctHypotheses += 1;
+    this.state.investigationPoints += 4;
+    this.state.chapterProgress = this.clamp(
+      this.state.chapterProgress + 15,
+      0,
+      100
+    );
+
+    this.updateStuckLevelFromProgress();
+    this.save();
+
+    return {
+      ok: true,
+      reward: 4,
+      message: "Гипотеза подтверждена. Получено 4 очка расследования."
+    };
+  },
+
+  correctVerdict() {
+    this.state.correctVerdicts += 1;
+    this.state.investigationPoints += 10;
+    this.state.chapterProgress = 100;
+    this.state.stuckLevel = 0;
 
     this.save();
+
+    return {
+      ok: true,
+      reward: 10,
+      message: "Верный вердикт. Получено 10 очков расследования."
+    };
+  },
+
+  updateStuckLevelFromProgress() {
+    const progress = this.state.chapterProgress;
+
+    if (progress <= 0) {
+      this.state.stuckLevel = 0;
+    } else if (progress < 25) {
+      this.state.stuckLevel = 1;
+    } else if (progress < 50) {
+      this.state.stuckLevel = 2;
+    } else if (progress < 75) {
+      this.state.stuckLevel = 3;
+    } else {
+      this.state.stuckLevel = 4;
+    }
+  },
+
+  setProgress(value) {
+    const progress = this.clamp(
+      Math.floor(Number(value) || 0),
+      0,
+      100
+    );
+
+    this.state.chapterProgress = progress;
+    this.updateStuckLevelFromProgress();
+    this.save();
+
+    return {
+      ok: true,
+      progress
+    };
   },
 
   advanceChapter() {
     this.state.currentChapter += 1;
+
+    this.state.chapterProgress = 0;
     this.state.softHintsUsed = 0;
     this.state.hardHintsUsed = 0;
-    this.state.chapterProgress = 0;
     this.state.stuckLevel = 0;
+
     this.save();
+
+    return {
+      ok: true,
+      chapter: this.state.currentChapter
+    };
   },
 
   requestSoftHint() {
     if (!this.canUseSoftHint()) {
-      return { ok: false, reason: "cooldown", remaining: Math.ceil(this.getSoftHintCooldownLeft() / 1000) };
-    }
-
-    const cost = this.getSoftHintCost();
-    if (!this.spendInvestigationPoints(cost)) {
-      return { ok: false, reason: "points", cost };
+      return {
+        ok: false,
+        reason: "cooldown",
+        remaining: Math.ceil(this.getSoftHintCooldownLeft() / 1000)
+      };
     }
 
     const hint = this.getHintByStuckLevel();
-    if (!hint) return { ok: false, reason: "nohint" };
+    const cost = this.getSoftHintCost();
+
+    if (!this.spendInvestigationPoints(cost)) {
+      return {
+        ok: false,
+        reason: "points",
+        cost
+      };
+    }
 
     this.state.lastSoftHintAt = Date.now();
     this.state.softHintsUsed += 1;
-    this.state.stuckLevel = Math.min(4, (this.state.stuckLevel || 0) + 1);
+    this.state.stuckLevel = Math.min(
+      4,
+      this.state.stuckLevel + 1
+    );
 
-    this.state.hintHistory.unshift(`Мягкая (${cost}): ${hint.text}`);
+    this.state.hintHistory.unshift(
+      `Мягкая (${cost} очков): ${hint.text}`
+    );
+
     this.state.hintHistory = this.state.hintHistory.slice(0, 10);
-
     this.save();
-    return { ok: true, hint, cost };
+
+    return {
+      ok: true,
+      type: "soft",
+      hint,
+      cost
+    };
   },
 
   requestHardHint() {
+    const hint = this.getHintByStuckLevel();
     const cost = this.getHardHintCost();
+
     if (!this.spendInvestigationPoints(cost)) {
-      return { ok: false, reason: "points", cost };
+      return {
+        ok: false,
+        reason: "points",
+        cost
+      };
     }
 
-    const hint = this.getHintByStuckLevel();
-    if (!hint) return { ok: false, reason: "nohint" };
-
     this.state.hardHintsUsed += 1;
-    this.state.stuckLevel = Math.min(4, (this.state.stuckLevel || 0) + 1);
+    this.state.stuckLevel = Math.min(
+      4,
+      this.state.stuckLevel + 1
+    );
 
-    this.state.hintHistory.unshift(`Жёсткая (${cost}): ${hint.text}`);
+    this.state.hintHistory.unshift(
+      `Жёсткая (${cost} очков): ${hint.text}`
+    );
+
     this.state.hintHistory = this.state.hintHistory.slice(0, 10);
+    this.save();
+
+    return {
+      ok: true,
+      type: "hard",
+      hint,
+      cost
+    };
+  },
+
+  reset() {
+    Object.entries(this.defaults).forEach(([key, value]) => {
+      this.state[key] = Array.isArray(value) ? [...value] : value;
+    });
 
     this.save();
-    return { ok: true, hint, cost };
+    return this.state;
   }
 };
+
+AIEngine.init();
