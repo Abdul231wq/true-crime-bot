@@ -1,485 +1,59 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    >
-
-    <meta
-        name="theme-color"
-        content="#080b10"
-    >
-
-    <title>True Crime Detective</title>
-
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Investigation Hint System</title>
+  <link rel="stylesheet" href="css.css" />
 </head>
-
 <body>
-    <main class="app">
-
-        <header
-            id="header"
-            class="topbar hidden"
-        >
-            <div class="stat">
-                🕵️
-                <span id="player-display">
-                    Детектив
-                </span>
-            </div>
-
-            <div class="stat">
-                ❤️
-                <span id="lives-count">
-                    5/5
-                </span>
-            </div>
-
-            <div class="stat">
-                📁
-                <span id="level-count">
-                    1
-                </span>
-            </div>
-
-            <div class="stat">
-                💡
-                <span id="hints-count">
-                    5
-                </span>
-            </div>
-        </header>
-
-        <button
-            id="sound-toggle"
-            class="sound-toggle"
-            type="button"
-            onclick="Game.toggleSound()"
-        >
-            🔊 Звук включён
-        </button>
-
-        <section
-            id="screen-start"
-            class="screen"
-        >
-            <div class="eyebrow">
-                TRUE CRIME AI
-            </div>
-
-            <h1>
-                СЕКРЕТНЫЕ АРХИВЫ
-            </h1>
-
-            <div class="hero-image">
-                <img
-                    src="https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?w=1000&q=80"
-                    alt="Место преступления"
-                >
-            </div>
-
-            <p class="description">
-                Расследуйте сложные дела,
-                сравнивайте алиби, проверяйте улики
-                и допрашивайте подозреваемых.
-            </p>
-
-            <div class="start-info">
-                🎁 На старте доступно:
-                <strong>
-                    5 бесплатных подсказок
-                </strong>
-            </div>
-
-            <input
-                id="player-name-input"
-                type="text"
-                maxlength="24"
-                autocomplete="nickname"
-                placeholder="Введите ваш позывной"
-            >
-
-            <button
-                class="button button-primary"
-                type="button"
-                onclick="Game.start()"
-            >
-                🚀 Начать расследование
-            </button>
-        </section>
-
-        <section
-            id="screen-case"
-            class="screen hidden"
-        >
-            <div class="case-image">
-                <img
-                    id="case-img"
-                    src=""
-                    alt="Место преступления"
-                >
-            </div>
-
-            <h2 id="case-title">
-                Загрузка дела...
-            </h2>
-
-            <div
-                id="case-difficulty"
-                class="difficulty"
-            >
-                Сложность: Средняя
-            </div>
-
-            <p
-                id="case-desc"
-                class="description"
-            ></p>
-
-            <div class="info-grid">
-                <div class="info-card">
-                    <span>
-                        Вопросы
-                    </span>
-
-                    <strong
-                        id="questions-left-badge"
-                    >
-                        8/8
-                    </strong>
-                </div>
-
-                <div class="info-card">
-                    <span>
-                        Подсказки
-                    </span>
-
-                    <strong>
-                        💡
-                        <span id="case-hints-count">
-                            5
-                        </span>
-                    </strong>
-                </div>
-            </div>
-
-            <button
-                class="button"
-                type="button"
-                onclick="Game.openScreen('screen-clues')"
-            >
-                🔎 Улики
-            </button>
-
-            <button
-                class="button"
-                type="button"
-                onclick="Game.openScreen('screen-suspects')"
-            >
-                👥 Допросить подозреваемых
-            </button>
-
-            <button
-                class="button button-danger"
-                type="button"
-                onclick="Game.openScreen('screen-verdict')"
-            >
-                ⚖️ Вынести обвинение
-            </button>
-        </section>
-
-        <section
-            id="screen-clues"
-            class="screen hidden"
-        >
-            <h2>
-                🔎 Вещественные доказательства
-            </h2>
-
-            <p class="description">
-                Не все улики одинаково важны.
-                Сопоставьте их с показаниями
-                подозреваемых.
-            </p>
-
-            <div
-                id="clues-container"
-                class="list"
-            ></div>
-
-            <button
-                class="button button-secondary"
-                type="button"
-                onclick="Game.openScreen('screen-case')"
-            >
-                🔙 Назад к делу
-            </button>
-        </section>
-
-        <section
-            id="screen-suspects"
-            class="screen hidden"
-        >
-            <h2>
-                👥 Список подозреваемых
-            </h2>
-
-            <p class="description">
-                В деле четыре подозреваемых.
-                Изучите алиби, мотивы и их связь
-                с жертвой.
-            </p>
-
-            <div
-                id="suspects-container"
-                class="list"
-            ></div>
-
-            <button
-                class="button button-secondary"
-                type="button"
-                onclick="Game.openScreen('screen-case')"
-            >
-                🔙 Назад к делу
-            </button>
-        </section>
-
-        <section
-            id="screen-interrogation"
-            class="screen hidden"
-        >
-            <div class="suspect">
-                <img
-                    id="suspect-photo"
-                    src=""
-                    alt="Подозреваемый"
-                >
-
-                <div>
-                    <h2 id="suspect-name">
-                        Допрос
-                    </h2>
-
-                    <span
-                        id="suspect-role"
-                        class="role"
-                    >
-                        Подозреваемый
-                    </span>
-                </div>
-            </div>
-
-            <div class="suspicion">
-                <div class="suspicion-header">
-                    <span>
-                        Уровень подозрения
-                    </span>
-
-                    <strong
-                        id="suspicion-value"
-                    >
-                        0%
-                    </strong>
-                </div>
-
-                <div class="progress">
-                    <div
-                        id="suspicion-fill"
-                    ></div>
-                </div>
-
-                <div class="progress-labels">
-                    <span>
-                        Спокоен
-                    </span>
-
-                    <span>
-                        Нервничает
-                    </span>
-
-                    <span>
-                        Опасен
-                    </span>
-                </div>
-            </div>
-
-            <div class="quick-questions">
-                <button
-                    type="button"
-                    onclick="Game.quickAsk('alibi')"
-                >
-                    Алиби
-                </button>
-
-                <button
-                    type="button"
-                    onclick="Game.quickAsk('motive')"
-                >
-                    Мотив
-                </button>
-
-                <button
-                    type="button"
-                    onclick="Game.quickAsk('clue')"
-                >
-                    Улики
-                </button>
-
-                <button
-                    type="button"
-                    onclick="Game.quickAsk('relation')"
-                >
-                    Жертва
-                </button>
-            </div>
-
-            <div
-                id="chat-box"
-                class="chat"
-            ></div>
-
-            <div class="question-row">
-                <input
-                    id="user-question"
-                    type="text"
-                    maxlength="160"
-                    autocomplete="off"
-                    placeholder="Задайте вопрос..."
-                >
-
-                <button
-                    class="send"
-                    type="button"
-                    onclick="Game.askQuestion()"
-                >
-                    ➜
-                </button>
-            </div>
-
-            <button
-                class="button button-primary"
-                type="button"
-                onclick="Game.buyHint()"
-            >
-                💡 Использовать бесплатную подсказку
-            </button>
-
-            <button
-                class="button button-secondary"
-                type="button"
-                onclick="Game.openScreen('screen-suspects')"
-            >
-                🔙 К другим подозреваемым
-            </button>
-        </section>
-
-        <section
-            id="screen-verdict"
-            class="screen hidden"
-        >
-            <h2>
-                ⚖️ Вынесение обвинения
-            </h2>
-
-            <p class="description">
-                Выберите одного из четырёх
-                подозреваемых. Ошибка отнимет одну жизнь.
-            </p>
-
-            <div
-                id="verdict-container"
-                class="list"
-            ></div>
-
-            <button
-                class="button button-secondary"
-                type="button"
-                onclick="Game.openScreen('screen-case')"
-            >
-                🔙 Перепроверить материалы
-            </button>
-        </section>
-
-        <section
-            id="screen-result"
-            class="screen result hidden"
-        >
-            <div
-                id="result-icon"
-                class="result-icon"
-            >
-                🎯
-            </div>
-
-            <h2 id="result-title">
-                Дело раскрыто
-            </h2>
-
-            <p
-                id="result-text"
-                class="description"
-            ></p>
-
-            <div class="result-grid">
-                <div>
-                    <span>
-                        Позывной
-                    </span>
-
-                    <strong id="result-player">
-                        Детектив
-                    </strong>
-                </div>
-
-                <div>
-                    <span>
-                        Уровень
-                    </span>
-
-                    <strong id="result-level">
-                        1
-                    </strong>
-                </div>
-
-                <div>
-                    <span>
-                        Жизни
-                    </span>
-
-                    <strong id="result-lives">
-                        5/5
-                    </strong>
-                </div>
-            </div>
-
-            <button
-                class="button button-primary"
-                type="button"
-                onclick="Game.loadCase()"
-            >
-                ➡️ Следующее дело
-            </button>
-
-            <button
-                class="button button-secondary"
-                type="button"
-                onclick="Game.openScreen('screen-case')"
-            >
-                🔙 К делу
-            </button>
-        </section>
-    </main>
-
-    <script src="ai_engine.js"></script>
-    <script src="game.js"></script>
+  <div class="wrap">
+    <div class="panel">
+      <h1 style="margin-top:0">Система подсказок</h1>
+
+      <div class="kpi">
+        <div>Глава: <span id="uiChapter">1</span></div>
+        <div>Прогресс: <span id="uiProgress">0%</span></div>
+        <div>Очки расследования: <span id="uiPoints">0</span></div>
+        <div>Уровень тупика: <span id="uiStuck">0</span></div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <label>Прогресс главы <input id="progressInput" type="number" min="0" max="100" value="0"></label>
+        <button id="applyProgressBtn">Применить</button>
+        <button id="nextChapterBtn">Следующая глава</button>
+        <button id="softHintBtn">Мягкая подсказка</button>
+        <button id="hardHintBtn">Жёсткая подсказка</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin-top:0">Стоимость</h2>
+      <div class="row">
+        <div>Мягкая: <span id="softCostText"></span></div>
+        <div>Жёсткая: <span id="hardCostText"></span></div>
+        <div class="small" id="cooldownText"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin-top:0">Подсказка</h2>
+      <div id="hintBox" class="muted">Пока подсказка не запрошена.</div>
+      <div id="hintHistory" class="hint-history"></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin-top:0">Доска</h2>
+      <div class="board" id="board">
+        <div class="card board-clue">Улика A</div>
+        <div class="card board-clue">Улика B</div>
+        <div class="card board-suspect">Подозреваемый 1</div>
+        <div class="card board-suspect">Подозреваемый 2</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="ai_engine.js"></script>
+  <script src="game.js"></script>
 </body>
-</html>
+            </html>
