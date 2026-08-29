@@ -3,105 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>True Crime Bot</title>
+  <title>True Crime Bot — Дело</title>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div class="app">
+  <div class="page-shell">
     <header class="topbar">
       <div class="brand">
         <div class="brand-logo">TC</div>
         <div>
           <h1>TRUE CRIME BOT</h1>
-          <p>Дело, жизнь, расследование</p>
+          <p>Страница 1 — Состав дела</p>
         </div>
       </div>
       <div class="stats">
-        <div class="stat"><span>ДЕЛО</span><strong id="uiCase">001</strong></div>
-        <div class="stat"><span>ГЛАВА</span><strong id="uiChapter">1</strong></div>
-        <div class="stat"><span>ОЧКИ</span><strong id="uiPoints">20</strong></div>
-        <div class="stat"><span>ЖИЗНИ</span><strong id="uiLives">0</strong></div>
+        <div class="stat"><span>ДЕЛО</span><strong data-ui-chapter>1</strong></div>
+        <div class="stat"><span>ОЧКИ</span><strong data-ui-points>20</strong></div>
+        <div class="stat"><span>ЖИЗНИ</span><strong data-ui-lives>0</strong></div>
       </div>
     </header>
 
-    <main class="pages">
-      <section id="page-1" class="page page-active">
-        <div class="page-head"><span>СТРАНИЦА 1</span><h2>Состав дела</h2></div>
-        <div class="panel story">
-          <h3>История дела</h3>
-          <p>Ночь. Закрытая комната. Один человек мёртв, трое под подозрением. Сначала выбери преступника или того, кого нужно проверить первым.</p>
-        </div>
-        <div class="suspects" id="suspectGrid">
-          <button class="suspect selected" data-suspect="suspect-a" type="button"><b>01</b><h3>Алексей Морозов</h3><p>Неполное алиби, был рядом с местом преступления.</p></button>
-          <button class="suspect" data-suspect="suspect-b" type="button"><b>02</b><h3>Марина Логинова</h3><p>Версия расходится со временем звонка.</p></button>
-          <button class="suspect" data-suspect="suspect-c" type="button"><b>03</b><h3>Игорь Белый</h3><p>Свидетель, связей с местом меньше всего.</p></button>
-        </div>
-        <div class="page-actions">
-          <button id="startCaseBtn" class="primary-btn" type="button">Начать дело</button>
-        </div>
-      </section>
+    <main class="panel">
+      <div class="page-head">
+        <div><span>СТРАНИЦА 1</span><h2>Состав дела</h2></div>
+        <button class="btn btn-primary" data-nav="./case.html">Начать дело</button>
+      </div>
 
-      <section id="page-2" class="page page-hidden">
-        <div class="page-head"><span>СТРАНИЦА 2</span><h2>Игровой процесс</h2></div>
-        <div class="panel progress-panel">
-          <div class="progress-row"><span>Прогресс</span><strong id="uiProgress">0%</strong></div>
-          <div class="bar"><div id="chapterProgressBar" class="fill"></div></div>
-        </div>
-        <div class="panel actions-panel">
-          <button id="findClueBtn" class="action blue" type="button">Искать улики <small>+2 очка, +10%</small></button>
-          <button id="successfulQuestionBtn" class="action green" type="button">Допросить свидетеля <small>+3 очка, +10%</small></button>
-          <button id="correctHypothesisBtn" class="action purple" type="button">Проверить гипотезу <small>+4 очка, +15%</small></button>
-          <button id="correctVerdictBtn" class="action gold" type="button">Вынести вердикт <small>+10 очков, конец главы</small></button>
-        </div>
-        <div id="gameMessage" class="message">Нажми «Начать дело», чтобы открыть игру.</div>
-      </section>
+      <div class="card">
+        <h3>История дела</h3>
+        <p>Ночь. Закрытая комната. Один человек мёртв, трое под подозрением. Сначала выбери преступника.</p>
+      </div>
 
-      <section id="page-3" class="page page-hidden">
-        <div class="page-head"><span>СТРАНИЦА 3</span><h2>Доска дела и подсказки</h2></div>
-        <div class="panel board">
-          <h3>Доска дела</h3>
-          <div class="evidence-grid">
-            <article class="evidence"><span>УЛИКА</span><h4>След у двери</h4><p>Замок был открыт изнутри.</p></article>
-            <article class="evidence"><span>УЛИКА</span><h4>Запись звонка</h4><p>Звонок совпадает с временем конфликта.</p></article>
-            <article class="evidence"><span>ПОДОЗР.</span><h4>Алексей Морозов</h4><p>Слабое алиби и мотив.</p></article>
-            <article class="evidence"><span>ПОДОЗР.</span><h4>Марина Логинова</h4><p>Была рядом, но не в комнате.</p></article>
-          </div>
-        </div>
-        <div class="panel hints">
-          <div class="hint-head"><strong>Подсказка</strong><span id="cooldownText">Жизнь даётся раз в час.</span></div>
-          <div class="hint-buttons">
-            <button id="softHintBtn" class="hint-btn soft" type="button">Мягкая</button>
-            <button id="hardHintBtn" class="hint-btn hard" type="button">Жёсткая</button>
-          </div>
-          <div id="hintBox" class="hint-box">Подсказка появится здесь.</div>
-          <div class="history-title">Хронология</div>
-          <div id="hintHistory" class="history"></div>
-        </div>
-      </section>
+      <div class="grid-3" style="margin-top:12px">
+        <button class="card btn suspect selected" data-suspect="suspect-a" type="button">
+          <h4>Алексей Морозов</h4><p>Неполное алиби, был рядом с местом преступления.</p>
+        </button>
+        <button class="card btn suspect" data-suspect="suspect-b" type="button">
+          <h4>Марина Логинова</h4><p>Версия расходится со временем звонка.</p>
+        </button>
+        <button class="card btn suspect" data-suspect="suspect-c" type="button">
+          <h4>Игорь Белый</h4><p>Свидетель, связей с местом меньше всего.</p>
+        </button>
+      </div>
 
-      <section id="page-4" class="page page-hidden">
-        <div class="page-head"><span>СТРАНИЦА 4</span><h2>Управление</h2></div>
-        <div class="panel control">
-          <label for="progressInput">Прогресс вручную</label>
-          <div class="row"><input id="progressInput" type="number" min="0" max="100" value="0"><button id="applyProgressBtn" type="button">OK</button></div>
-          <div class="nav-buttons">
-            <button id="prevPageBtn" type="button">← Назад</button>
-            <button id="nextPageBtn" type="button">Вперёд →</button>
-          </div>
-          <button id="resetBtn" class="reset" type="button">Сбросить сохранение</button>
-        </div>
-      </section>
+      <div class="card" style="margin-top:12px">
+        <strong>Выбранный подозреваемый:</strong> <span id="selectedSuspectText">Алексей Морозов</span>
+      </div>
     </main>
 
-    <footer class="footer">
-      <button class="tab tab-active" data-page="1" type="button">Дело</button>
-      <button class="tab" data-page="2" type="button">Процесс</button>
-      <button class="tab" data-page="3" type="button">Доска</button>
-      <button class="tab" data-page="4" type="button">Управление</button>
-    </footer>
+    <nav class="footer-nav">
+      <a class="active" href="./index.html">Дело</a>
+      <a href="./case.html">Процесс</a>
+      <a href="./board.html">Доска</a>
+      <a href="./control.html">Управление</a>
+    </nav>
   </div>
 
-  <script src="./ai_engine.js"></script>
-  <script src="./game.js"></script>
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
