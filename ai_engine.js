@@ -1,1 +1,87 @@
-const AIEngine={STORAGE_PREFIX:"true_crime_bot_",defaults:{currentChapter:1,chapterProgress:0,investigationPoints:20,lives:0,lifeNextAt:0,softHintBaseCost:5,hardHintBaseCost:15,softHintMultiplier:1.35,hardHintMultiplier:1.45,chapterHintMultiplier:0.25,maxChapterHintMultiplier:2,softHintsUsed:0,hardHintsUsed:0,softHintCooldownMs:60000,lastSoftHintAt:0,stuckLevel:0,cluesFound:0,successfulQuestions:0,correctHypotheses:0,correctVerdicts:0,hintHistory:[],activeSuspect:"suspect-a"},state:{},init(){this.state={currentChapter:this.readNumber("currentChapter",this.defaults.currentChapter),chapterProgress:this.readNumber("chapterProgress",this.defaults.chapterProgress),investigationPoints:this.readNumber("investigationPoints",this.defaults.investigationPoints),lives:this.readNumber("lives",this.defaults.lives),lifeNextAt:this.readNumber("lifeNextAt",this.defaults.lifeNextAt),softHintBaseCost:this.readNumber("softHintBaseCost",this.defaults.softHintBaseCost),hardHintBaseCost:this.readNumber("hardHintBaseCost",this.defaults.hardHintBaseCost),softHintMultiplier:this.readNumber("softHintMultiplier",this.defaults.softHintMultiplier),hardHintMultiplier:this.readNumber("hardHintMultiplier",this.defaults.hardHintMultiplier),chapterHintMultiplier:this.readNumber("chapterHintMultiplier",this.defaults.chapterHintMultiplier),maxChapterHintMultiplier:this.readNumber("maxChapterHintMultiplier",this.defaults.maxChapterHintMultiplier),softHintsUsed:this.readNumber("softHintsUsed",this.defaults.softHintsUsed),hardHintsUsed:this.readNumber("hardHintsUsed",this.defaults.hardHintsUsed),softHintCooldownMs:this.readNumber("softHintCooldownMs",this.defaults.softHintCooldownMs),lastSoftHintAt:this.readNumber("lastSoftHintAt",this.defaults.lastSoftHintAt),stuckLevel:this.readNumber("stuckLevel",this.defaults.stuckLevel),cluesFound:this.readNumber("cluesFound",this.defaults.cluesFound),successfulQuestions:this.readNumber("successfulQuestions",this.defaults.successfulQuestions),correctHypotheses:this.readNumber("correctHypotheses",this.defaults.correctHypotheses),correctVerdicts:this.readNumber("correctVerdicts",this.defaults.correctVerdicts),hintHistory:this.readJSON("hintHistory",this.defaults.hintHistory),activeSuspect:localStorage.getItem(this.storageKey("activeSuspect"))||this.defaults.activeSuspect};this.normalizeState();this.ensureLifeTimer();this.updateStuckLevelFromProgress();this.save();return this.state},storageKey(n){return `${this.STORAGE_PREFIX}${n}`},readNumber(n,f){const s=localStorage.getItem(this.storageKey(n));const v=Number(s);return Number.isFinite(v)?v:f},readJSON(n,f){const s=localStorage.getItem(this.storageKey(n));if(s===null)return Array.isArray(f)?[...f]:f;try{const v=JSON.parse(s);return Array.isArray(v)?v:(Array.isArray(f)?[...f]:f)}catch{return Array.isArray(f)?[...f]:f}},save(){Object.entries(this.state).forEach(([k,v])=>localStorage.setItem(this.storageKey(k),JSON.stringify(v)))},normalizeState(){const s=this.state;s.currentChapter=Math.max(1,Math.floor(Number(s.currentChapter)||1));s.chapterProgress=this.clamp(Math.floor(Number(s.chapterProgress)||0),0,100);s.investigationPoints=Math.max(0,Math.floor(Number(s.investigationPoints)||0));s.lives=Math.max(0,Math.floor(Number(s.lives)||0));s.lifeNextAt=Math.max(0,Math.floor(Number(s.lifeNextAt)||0));s.softHintsUsed=Math.max(0,Math.floor(Number(s.softHintsUsed)||0));s.hardHintsUsed=Math.max(0,Math.floor(Number(s.hardHintsUsed)||0));s.stuckLevel=this.clamp(Math.floor(Number(s.stuckLevel)||0),0,4);s.cluesFound=Math.max(0,Math.floor(Number(s.cluesFound)||0));s.successfulQuestions=Math.max(0,Math.floor(Number(s.successfulQuestions)||0));s.correctHypotheses=Math.max(0,Math.floor(Number(s.correctHypotheses)||0));s.correctVerdicts=Math.max(0,Math.floor(Number(s.correctVerdicts)||0));if(!Array.isArray(s.hintHistory))s.hintHistory=[];if(!s.activeSuspect)s.activeSuspect=this.defaults.activeSuspect},clamp(v,min,max){return Math.max(min,Math.min(max,v))},setActiveSuspect(id){this.state.activeSuspect=id;this.save();return id},getActiveSuspectName(){if(this.state.activeSuspect==="suspect-b")return"Марина Логинова";if(this.state.activeSuspect==="suspect-c")return"Игорь Белый";return"Алексей Морозов"},ensureLifeTimer(){if(!this.state.lifeNextAt){this.state.lifeNextAt=Date.now()+3600000;this.save()}this.awardLivesByTime()},awardLivesByTime(){const now=Date.now();let changed=false;while(this.state.lifeNextAt&&now>=this.state.lifeNextAt){this.state.lives+=1;this.state.lifeNextAt+=3600000;changed=true}if(changed)this.save();return changed},getLifeCountdown(){const left=Math.max(0,(this.state.lifeNextAt||0)-Date.now());const h=Math.floor(left/3600000);const m=Math.floor((left%3600000)/60000);const s=Math.floor((left%60000)/1000);return{left,h,m,s,text:`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}},spendLife(){this.awardLivesByTime();if(this.state.lives<=0)return false;this.state.lives-=1;this.save();return true},getChapterMultiplier(){const c=Math.max(1,this.state.currentChapter||1);return Math.min(this.state.maxChapterHintMultiplier,1+(c-1)*this.state.chapterHintMultiplier)},getSoftHintCost(){return Math.max(1,Math.ceil(this.state.softHintBaseCost*this.getChapterMultiplier()*Math.pow(this.state.softHintMultiplier,this.state.softHintsUsed)))},getHardHintCost(){return Math.max(1,Math.ceil(this.state.hardHintBaseCost*this.getChapterMultiplier()*Math.pow(this.state.hardHintMultiplier,this.state.hardHintsUsed)))},canUseSoftHint(){return this.getSoftHintCooldownLeft()<=0},getSoftHintCooldownLeft(){return Math.max(0,this.state.softHintCooldownMs-(Date.now()-Number(this.state.lastSoftHintAt||0)))},getHintByStuckLevel(){const l=this.state.stuckLevel||0;if(l<=0)return{type:"soft",text:"Проверь, кто имел мотив и кто был последним рядом с жертвой."};if(l===1)return{type:"soft",text:"Сравни алиби подозреваемых со временем звонка."};if(l===2)return{type:"soft",text:"Одна улика не совпадает с версией подозреваемого."};if(l===3)return{type:"hard",text:"Главный подозреваемый скрывает несоответствие в своём времени."};return{type:"hard",text:"Выбери того, чьи слова ломаются при проверке звонка и следов."}},canAct(){this.awardLivesByTime();return this.state.lives>0},spendInvestigationPoints(c){const cost=Math.max(0,Math.floor(Number(c)||0));if(this.state.investigationPoints<cost)return false;this.state.investigationPoints-=cost;return true},addClue(){if(!this.canAct())return{ok:false,reason:"lives"};this.state.cluesFound+=1;this.state.investigationPoints+=2;this.state.chapterProgress=this.clamp(this.state.chapterProgress+10,0,100);this.updateStuckLevelFromProgress();this.save();return{ok:true,message:"Найдена новая улика. Получено 2 очка расследования."}},successfulQuestion(){if(!this.canAct())return{ok:false,reason:"lives"};this.state.successfulQuestions+=1;this.state.investigationPoints+=3;this.state.chapterProgress=this.clamp(this.state.chapterProgress+10,0,100);this.updateStuckLevelFromProgress();this.save();return{ok:true,message:"Допрос дал результат. Получено 3 очка расследования."}},correctHypothesis(){if(!this.canAct())return{ok:false,reason:"lives"};this.state.correctHypotheses+=1;this.state.investigationPoints+=4;this.state.chapterProgress=this.clamp(this.state.chapterProgress+15,0,100);this.updateStuckLevelFromProgress();this.save();return{ok:true,message:"Гипотеза подтверждена. Получено 4 очка расследования."}},correctVerdict(){if(!this.canAct())return{ok:false,reason:"lives"};this.state.correctVerdicts+=1;this.state.investigationPoints+=10;this.state.chapterProgress=100;this.state.stuckLevel=0;this.save();return{ok:true,message:"Верный вердикт. Получено 10 очков расследования."}},updateStuckLevelFromProgress(){const p=this.state.chapterProgress;if(p<=0)this.state.stuckLevel=0;else if(p<25)this.state.stuckLevel=1;else if(p<50)this.state.stuckLevel=2;else if(p<75)this.state.stuckLevel=3;else this.state.stuckLevel=4},setProgress(v){const p=this.clamp(Math.floor(Number(v)||0),0,100);this.state.chapterProgress=p;this.updateStuckLevelFromProgress();this.save();return{ok:true,progress:p}},advanceChapter(){if(!this.canAct())return{ok:false,reason:"lives"};this.state.currentChapter+=1;this.state.chapterProgress=0;this.state.softHintsUsed=0;this.state.hardHintsUsed=0;this.state.stuckLevel=0;this.save();return{ok:true,chapter:this.state.currentChapter}},requestSoftHint(){if(!this.canAct())return{ok:false,reason:"lives"};if(!this.canUseSoftHint())return{ok:false,reason:"cooldown",remaining:Math.ceil(this.getSoftHintCooldownLeft()/1000)};const hint=this.getHintByStuckLevel();const cost=this.getSoftHintCost();if(!this.spendInvestigationPoints(cost))return{ok:false,reason:"points",cost};this.state.lastSoftHintAt=Date.now();this.state.softHintsUsed+=1;this.state.stuckLevel=Math.min(4,this.state.stuckLevel+1);this.state.hintHistory.unshift(`Мягкая (${cost} очков): ${hint.text}`);this.state.hintHistory=this.state.hintHistory.slice(0,10);this.save();return{ok:true,type:"soft",hint,cost}},requestHardHint(){if(!this.canAct())return{ok:false,reason:"lives"};const hint=this.getHintByStuckLevel();const cost=this.getHardHintCost();if(!this.spendInvestigationPoints(cost))return{ok:false,reason:"points",cost};this.state.hardHintsUsed+=1;this.state.stuckLevel=Math.min(4,this.state.stuckLevel+1);this.state.hintHistory.unshift(`Жёсткая (${cost} очков): ${hint.text}`);this.state.hintHistory=this.state.hintHistory.slice(0,10);this.save();return{ok:true,type:"hard",hint,cost}},reset(){this.state={};Object.entries(this.defaults).forEach(([k,v])=>this.state[k]=Array.isArray(v)?[...v]:v);this.state.lifeNextAt=Date.now()+3600000;this.save();return this.state}};AIEngine.init(); 
+const AIEngine = {
+  getActiveSuspectName() {
+    if (GameData.state.activeSuspect === "suspect-b") return "Марина Логинова";
+    if (GameData.state.activeSuspect === "suspect-c") return "Игорь Белый";
+    return "Алексей Морозов";
+  },
+
+  getSoftHintCost() {
+    return 5;
+  },
+
+  getHardHintCost() {
+    return 15;
+  },
+
+  getLifeCountdownText() {
+    const hour = 60 * 60 * 1000;
+    const left = Math.max(0, hour - (Date.now() - GameData.state.lastLifeAt));
+    const mm = String(Math.floor(left / 60000)).padStart(2, "0");
+    const ss = String(Math.floor((left % 60000) / 1000)).padStart(2, "0");
+    return `${mm}:${ss}`;
+  },
+
+  canAct() {
+    GameData.tickLives();
+    return GameData.state.lives > 0;
+  },
+
+  addClue() {
+    if (!this.canAct()) return { ok: false, reason: "lives" };
+    GameData.state.points += 2;
+    GameData.state.progress = Math.min(100, GameData.state.progress + 10);
+    GameData.save();
+    return { ok: true, message: "Улика найдена. +2 очка, +10% прогресса." };
+  },
+
+  successfulQuestion() {
+    if (!this.canAct()) return { ok: false, reason: "lives" };
+    GameData.state.points += 3;
+    GameData.state.progress = Math.min(100, GameData.state.progress + 10);
+    GameData.save();
+    return { ok: true, message: "Допрос успешен. +3 очка, +10% прогресса." };
+  },
+
+  correctHypothesis() {
+    if (!this.canAct()) return { ok: false, reason: "lives" };
+    GameData.state.points += 4;
+    GameData.state.progress = Math.min(100, GameData.state.progress + 15);
+    GameData.save();
+    return { ok: true, message: "Гипотеза подтверждена. +4 очка, +15% прогресса." };
+  },
+
+  correctVerdict() {
+    if (!this.canAct()) return { ok: false, reason: "lives" };
+    GameData.state.points += 10;
+    GameData.state.progress = 100;
+    GameData.save();
+    return { ok: true, message: "Вердикт вынесен. +10 очков." };
+  },
+
+  requestSoftHint() {
+    if (!this.canAct()) return { ok: false, reason: "lives" };
+    if (GameData.state.points < this.getSoftHintCost()) return { ok: false, reason: "points" };
+    GameData.state.points -= this.getSoftHintCost();
+    const hint = "Мягкая подсказка: проверь алиби и время звонка.";
+    GameData.addHint(`Мягкая: ${hint}`);
+    GameData.save();
+    return { ok: true, message: hint };
+  },
+
+  requestHardHint() {
+    if (!this.canAct()) return { ok: false, reason: "lives" };
+    if (GameData.state.points < this.getHardHintCost()) return { ok: false, reason: "points" };
+    GameData.state.points -= this.getHardHintCost();
+    const hint = "Жёсткая подсказка: главный подозреваемый врёт о времени.";
+    GameData.addHint(`Жёсткая: ${hint}`);
+    GameData.save();
+    return { ok: true, message: hint };
+  },
+
+  setProgress(value) {
+    const p = Math.max(0, Math.min(100, Number(value) || 0));
+    GameData.state.progress = p;
+    GameData.save();
+    return p;
+  }
+};
