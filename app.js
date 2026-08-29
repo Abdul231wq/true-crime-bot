@@ -1,9 +1,3 @@
-function selectedSuspectName(id) {
-  if (id === "suspect-b") return "Марина Логинова";
-  if (id === "suspect-c") return "Игорь Белый";
-  return "Алексей Морозов";
-}
-
 function updateUI() {
   const s = GameData.state;
 
@@ -18,23 +12,26 @@ function updateUI() {
 
   const lifeText = document.querySelector("[data-life-text]");
   if (lifeText) {
-    const hour = 60 * 60 * 1000;
-    const left = Math.max(0, hour - (Date.now() - GameData.state.lastLifeAt));
-    const mm = String(Math.floor(left / 60000)).padStart(2, "0");
-    const ss = String(Math.floor((left % 60000) / 1000)).padStart(2, "0");
     lifeText.textContent = s.lives > 0
-      ? `Жизней: ${s.lives}`
-      : `Жизнь появится через ${mm}:${ss}`;
+      ? `Жизней сейчас: ${s.lives} / ${s.maxLives}`
+      : `Жизнь появится через ${AIEngine.getLifeCountdownText()}`;
   }
+
+  const selectedSuspectText = document.querySelector("#selectedSuspectText");
+  if (selectedSuspectText) selectedSuspectText.textContent = AIEngine.getActiveSuspectName();
+
+  document.querySelectorAll("[data-suspect]").forEach(btn => {
+    btn.classList.toggle("selected", btn.dataset.suspect === s.activeSuspect);
+  });
 
   const historyBox = document.querySelector("[data-hint-history]");
   if (historyBox) {
     historyBox.innerHTML = "";
-    if (s.hintHistory.length === 0) {
-      const div = document.createElement("div");
-      div.className = "history-item";
-      div.textContent = "История подсказок пуста.";
-      historyBox.appendChild(div);
+    if (!s.hintHistory.length) {
+      const empty = document.createElement("div");
+      empty.className = "history-item";
+      empty.textContent = "История подсказок пуста.";
+      historyBox.appendChild(empty);
     } else {
       s.hintHistory.forEach(item => {
         const div = document.createElement("div");
@@ -45,34 +42,34 @@ function updateUI() {
     }
   }
 
-  const susText = document.querySelector("#selectedSuspectText");
-  if (susText) susText.textContent = selectedSuspectName(s.activeSuspect);
-
-  document.querySelectorAll("[data-suspect]").forEach(btn => {
-    btn.classList.toggle("selected", btn.dataset.suspect === s.activeSuspect);
-  });
+  const hintBox = document.querySelector("#hintBox");
+  if (hintBox && !hintBox.dataset.locked) {
+    hintBox.textContent = "Подсказка появится здесь.";
+  }
 }
 
-function requireLife(action) {
+function runAction(handler) {
   GameData.tickLives();
   if (GameData.state.lives <= 0) {
-    alert("Нет жизней. Жди следующую жизнь.");
+    alert(`Нет жизней. Следующая через ${AIEngine.getLifeCountdownText()}.`);
     updateUI();
     return;
   }
-  const ok = GameData.spendLife();
-  if (!ok) {
-    alert("Нет жизней. Жди следующую жизнь.");
+
+  const result = handler();
+  if (!result.ok) {
+    if (result.reason === "points") alert("Недостаточно очков.");
+    if (result.reason === "lives") alert(`Нет жизней. Следующая через ${AIEngine.getLifeCountdownText()}.`);
     updateUI();
     return;
   }
-  action();
+
+  const message = document.querySelector("#gameMessage");
+  if (message) message.textContent = result.message;
   updateUI();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  updateUI();
-
+function bindCommon() {
   document.querySelectorAll("[data-nav]").forEach(btn => {
     btn.addEventListener("click", () => {
       window.location.href = btn.dataset.nav;
@@ -88,57 +85,46 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const clueBtn = document.querySelector("[data-action='clue']");
-  if (clueBtn) clueBtn.addEventListener("click", () => requireLife(() => {
-    GameData.state.points += 2;
-    GameData.state.progress = Math.min(100, GameData.state.progress + 10);
-    GameData.save();
-    alert("Улика найдена.");
-  }));
+  if (clueBtn) clueBtn.addEventListener("click", () => runAction(() => AIEngine.addClue()));
 
   const questionBtn = document.querySelector("[data-action='question']");
-  if (questionBtn) questionBtn.addEventListener("click", () => requireLife(() => {
-    GameData.state.points += 3;
-    GameData.state.progress = Math.min(100, GameData.state.progress + 10);
-    GameData.save();
-    alert("Допрос успешен.");
-  }));
+  if (questionBtn) questionBtn.addEventListener("click", () => runAction(() => AIEngine.successfulQuestion()));
 
   const hypothesisBtn = document.querySelector("[data-action='hypothesis']");
-  if (hypothesisBtn) hypothesisBtn.addEventListener("click", () => requireLife(() => {
-    GameData.state.points += 4;
-    GameData.state.progress = Math.min(100, GameData.state.progress + 15);
-    GameData.save();
-    alert("Гипотеза подтверждена.");
-  }));
+  if (hypothesisBtn) hypothesisBtn.addEventListener("click", () => runAction(() => AIEngine.correctHypothesis()));
 
   const verdictBtn = document.querySelector("[data-action='verdict']");
-  if (verdictBtn) verdictBtn.addEventListener("click", () => requireLife(() => {
-    GameData.state.points += 10;
-    GameData.state.progress = 100;
-    GameData.save();
-    alert("Вердикт вынесен.");
-  }));
+  if (verdictBtn) verdictBtn.addEventListener("click", () => runAction(() => AIEngine.correctVerdict()));
 
   const softHintBtn = document.querySelector("[data-action='softHint']");
-  if (softHintBtn) softHintBtn.addEventListener("click", () => requireLife(() => {
-    GameData.state.points -= 5;
-    GameData.addHint("Мягкая подсказка: проверь алиби и время звонка.");
-    alert("Подсказка добавлена.");
+  if (softHintBtn) softHintBtn.addEventListener("click", () => runAction(() => {
+    const r = AIEngine.requestSoftHint();
+    if (r.ok) {
+      const box = document.querySelector("#hintBox");
+      if (box) box.textContent = r.message;
+      return r;
+    }
+    return r;
   }));
 
   const hardHintBtn = document.querySelector("[data-action='hardHint']");
-  if (hardHintBtn) hardHintBtn.addEventListener("click", () => requireLife(() => {
-    GameData.state.points -= 15;
-    GameData.addHint("Жёсткая подсказка: главный подозреваемый врёт о времени.");
-    alert("Подсказка добавлена.");
+  if (hardHintBtn) hardHintBtn.addEventListener("click", () => runAction(() => {
+    const r = AIEngine.requestHardHint();
+    if (r.ok) {
+      const box = document.querySelector("#hintBox");
+      if (box) box.textContent = r.message;
+      return r;
+    }
+    return r;
   }));
 
   const saveProgressBtn = document.querySelector("[data-action='saveProgress']");
   if (saveProgressBtn) saveProgressBtn.addEventListener("click", () => {
     const input = document.querySelector("#progressInput");
-    const value = Math.max(0, Math.min(100, Number(input.value) || 0));
-    GameData.state.progress = value;
-    GameData.save();
+    if (!input) return;
+    const value = AIEngine.setProgress(input.value);
+    const message = document.querySelector("#gameMessage");
+    if (message) message.textContent = `Прогресс установлен: ${value}%`;
     updateUI();
   });
 
@@ -154,4 +140,9 @@ document.addEventListener("DOMContentLoaded", () => {
     GameData.tickLives();
     updateUI();
   }, 1000);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  bindCommon();
+  updateUI();
 });
