@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>True Crime Bot — Процесс</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">TC</div>
+        <div>
+          <h1>TRUE CRIME BOT</h1>
+          <p>Страница 2 — Игровой процесс</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>ДЕЛО</span><strong data-ui-chapter>1</strong></div>
+        <div class="stat"><span>ОЧКИ</span><strong data-ui-points>20</strong></div>
+        <div class="stat"><span>ЖИЗНИ</span><strong data-ui-lives>0</strong></div>
+      </div>
+    </header>
+
+    <main class="panel">
+      <div class="page-head">
+        <div><span>СТРАНИЦА 2</span><h2>Игровой процесс</h2></div>
+        <a class="btn btn-primary" href="./board.html">К доске</a>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <span>Прогресс</span><strong data-ui-progress>0%</strong>
+        </div>
+        <div class="bar"><div class="fill" data-progress-bar></div></div>
+      </div>
+
+      <div class="grid-2" style="margin-top:12px">
+        <button class="btn card" data-action="clue" type="button">Искать улики<br><small>+2 очка, +10%</small></button>
+        <button class="btn card" data-action="question" type="button">Допросить свидетеля<br><small>+3 очка, +10%</small></button>
+        <button class="btn card" data-action="hypothesis" type="button">Проверить гипотезу<br><small>+4 очка, +15%</small></button>
+        <button class="btn card" data-action="verdict" type="button">Вынести вердикт<br><small>+10 очков, конец главы</small></button>
+      </div>
+
+      <div class="message" id="gameMessage">Игра готова. Начни расследование.</div>
+    </main>
+
+    <nav class="footer-nav">
+      <a href="./index.html">Дело</a>
+      <a class="active" href="./case.html">Процесс</a>
+      <a href="./board.html">Доска</a>
+      <a href="./control.html">Управление</a>
+    </nav>
+  </div>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
