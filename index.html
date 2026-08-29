@@ -16,6 +16,7 @@
           <p>Страница 1 — Состав дела</p>
         </div>
       </div>
+
       <div class="stats">
         <div class="stat"><span>ДЕЛО</span><strong data-ui-chapter>1</strong></div>
         <div class="stat"><span>ОЧКИ</span><strong data-ui-points>20</strong></div>
@@ -25,8 +26,11 @@
 
     <main class="panel">
       <div class="page-head">
-        <div><span>СТРАНИЦА 1</span><h2>Состав дела</h2></div>
-        <button class="btn btn-primary" data-nav="./case.html">Начать дело</button>
+        <div>
+          <span>СТРАНИЦА 1</span>
+          <h2>Состав дела</h2>
+        </div>
+        <button class="btn btn-primary" data-nav="./case.html">Перейти к игре</button>
       </div>
 
       <div class="card">
@@ -36,18 +40,24 @@
 
       <div class="grid-3" style="margin-top:12px">
         <button class="card btn suspect selected" data-suspect="suspect-a" type="button">
-          <h4>Алексей Морозов</h4><p>Неполное алиби, был рядом с местом преступления.</p>
+          <h4>Алексей Морозов</h4>
+          <p>Неполное алиби, был рядом с местом преступления.</p>
         </button>
+
         <button class="card btn suspect" data-suspect="suspect-b" type="button">
-          <h4>Марина Логинова</h4><p>Версия расходится со временем звонка.</p>
+          <h4>Марина Логинова</h4>
+          <p>Версия расходится со временем звонка.</p>
         </button>
+
         <button class="card btn suspect" data-suspect="suspect-c" type="button">
-          <h4>Игорь Белый</h4><p>Свидетель, связей с местом меньше всего.</p>
+          <h4>Игорь Белый</h4>
+          <p>Свидетель, связей с местом меньше всего.</p>
         </button>
       </div>
 
       <div class="card" style="margin-top:12px">
-        <strong>Выбранный подозреваемый:</strong> <span id="selectedSuspectText">Алексей Морозов</span>
+        <strong>Выбранный подозреваемый:</strong>
+        <span id="selectedSuspectText">Алексей Морозов</span>
       </div>
     </main>
 
@@ -60,6 +70,7 @@
   </div>
 
   <script src="./data.js"></script>
+  <script src="./ai_engine.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
