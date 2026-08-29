@@ -16,6 +16,7 @@
           <p>Страница 4 — Управление</p>
         </div>
       </div>
+
       <div class="stats">
         <div class="stat"><span>ДЕЛО</span><strong data-ui-chapter>1</strong></div>
         <div class="stat"><span>ОЧКИ</span><strong data-ui-points>20</strong></div>
@@ -25,20 +26,24 @@
 
     <main class="panel">
       <div class="page-head">
-        <div><span>СТРАНИЦА 4</span><h2>Управление, хронология, сброс</h2></div>
-        <a class="btn btn-primary" href="./index.html">К делу</a>
+        <div>
+          <span>СТРАНИЦА 4</span>
+          <h2>Управление, хронология, сброс</h2>
+        </div>
+        <button class="btn btn-primary" data-nav="./index.html">К делу</button>
       </div>
 
       <div class="card">
         <label for="progressInput">Прогресс вручную</label>
         <div style="display:flex;gap:8px;margin-top:8px">
-          <input id="progressInput" type="number" min="0" max="100" value="0" style="width:100%;padding:10px;border:1px solid #273240;border-radius:10px;background:#0f141b;color:#fff">
+          <input id="progressInput" type="number" min="0" max="100" value="0">
           <button class="btn" data-action="saveProgress" type="button">OK</button>
         </div>
       </div>
 
       <div class="card" style="margin-top:12px">
-        <strong>Жизнь:</strong> <span data-life-text>Жизнь даётся раз в час.</span>
+        <strong>Жизнь:</strong>
+        <span data-life-text>Жизнь даётся раз в час.</span>
       </div>
 
       <div class="card" style="margin-top:12px">
@@ -55,6 +60,7 @@
   </div>
 
   <script src="./data.js"></script>
+  <script src="./ai_engine.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
