@@ -143,52 +143,58 @@ const AIEngine = {
   },
 
   readNumber(name, fallback) {
-    const storedValue = localStorage.getItem(
-      this.storageKey(name)
-    );
+    const saved =
+      localStorage.getItem(
+        this.storageKey(name)
+      );
 
-    if (storedValue === null) {
+    if (saved === null) {
       return fallback;
     }
 
-    const numberValue = Number(storedValue);
+    const value = Number(saved);
 
-    if (!Number.isFinite(numberValue)) {
-      return fallback;
-    }
-
-    return numberValue;
+    return Number.isFinite(value)
+      ? value
+      : fallback;
   },
 
   readJSON(name, fallback) {
-    const storedValue = localStorage.getItem(
-      this.storageKey(name)
-    );
+    const saved =
+      localStorage.getItem(
+        this.storageKey(name)
+      );
 
-    if (storedValue === null) {
-      return Array.isArray(fallback) ? [...fallback] : fallback;
+    if (saved === null) {
+      return Array.isArray(fallback)
+        ? [...fallback]
+        : fallback;
     }
 
     try {
-      const parsedValue = JSON.parse(storedValue);
+      const value = JSON.parse(saved);
 
-      if (!Array.isArray(parsedValue)) {
-        return Array.isArray(fallback) ? [...fallback] : fallback;
-      }
-
-      return parsedValue;
+      return Array.isArray(value)
+        ? value
+        : Array.isArray(fallback)
+          ? [...fallback]
+          : fallback;
     } catch (error) {
-      return Array.isArray(fallback) ? [...fallback] : fallback;
+      return Array.isArray(fallback)
+        ? [...fallback]
+        : fallback;
     }
   },
 
   save() {
-    Object.entries(this.state).forEach(([key, value]) => {
-      localStorage.setItem(
-        this.storageKey(key),
-        JSON.stringify(value)
-      );
-    });
+    Object.entries(this.state).forEach(
+      ([key, value]) => {
+        localStorage.setItem(
+          this.storageKey(key),
+          JSON.stringify(value)
+        );
+      }
+    );
   },
 
   normalizeState() {
@@ -252,7 +258,10 @@ const AIEngine = {
   },
 
   clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
+    return Math.max(
+      min,
+      Math.min(max, value)
+    );
   },
 
   getChapterMultiplier() {
@@ -273,20 +282,19 @@ const AIEngine = {
   },
 
   getSoftHintCost() {
-    const baseCost = this.state.softHintBaseCost;
-
     const chapterMultiplier =
       this.getChapterMultiplier();
 
-    const usageMultiplier = Math.pow(
-      this.state.softHintMultiplier,
-      this.state.softHintsUsed
-    );
+    const usageMultiplier =
+      Math.pow(
+        this.state.softHintMultiplier,
+        this.state.softHintsUsed
+      );
 
     return Math.max(
       1,
       Math.ceil(
-        baseCost *
+        this.state.softHintBaseCost *
         chapterMultiplier *
         usageMultiplier
       )
@@ -294,20 +302,19 @@ const AIEngine = {
   },
 
   getHardHintCost() {
-    const baseCost = this.state.hardHintBaseCost;
-
     const chapterMultiplier =
       this.getChapterMultiplier();
 
-    const usageMultiplier = Math.pow(
-      this.state.hardHintMultiplier,
-      this.state.hardHintsUsed
-    );
+    const usageMultiplier =
+      Math.pow(
+        this.state.hardHintMultiplier,
+        this.state.hardHintsUsed
+      );
 
     return Math.max(
       1,
       Math.ceil(
-        baseCost *
+        this.state.hardHintBaseCost *
         chapterMultiplier *
         usageMultiplier
       )
@@ -319,10 +326,8 @@ const AIEngine = {
   },
 
   getSoftHintCooldownLeft() {
-    const now = Date.now();
-
     const elapsed =
-      now -
+      Date.now() -
       Number(this.state.lastSoftHintAt || 0);
 
     return Math.max(
@@ -332,7 +337,8 @@ const AIEngine = {
   },
 
   getHintByStuckLevel() {
-    const level = this.state.stuckLevel || 0;
+    const level =
+      this.state.stuckLevel || 0;
 
     if (level <= 0) {
       return {
@@ -391,34 +397,22 @@ const AIEngine = {
     return true;
   },
 
-  addInvestigationPoints(amount) {
-    const safeAmount = Math.max(
-      0,
-      Math.floor(Number(amount) || 0)
-    );
-
-    this.state.investigationPoints += safeAmount;
-    this.save();
-
-    return safeAmount;
-  },
-
   addClue() {
     this.state.cluesFound += 1;
     this.state.investigationPoints += 2;
 
-    this.state.chapterProgress = this.clamp(
-      this.state.chapterProgress + 10,
-      0,
-      100
-    );
+    this.state.chapterProgress =
+      this.clamp(
+        this.state.chapterProgress + 10,
+        0,
+        100
+      );
 
     this.updateStuckLevelFromProgress();
     this.save();
 
     return {
       ok: true,
-      reward: 2,
       message:
         "Найдена новая улика. Получено 2 очка расследования."
     };
@@ -428,18 +422,18 @@ const AIEngine = {
     this.state.successfulQuestions += 1;
     this.state.investigationPoints += 3;
 
-    this.state.chapterProgress = this.clamp(
-      this.state.chapterProgress + 10,
-      0,
-      100
-    );
+    this.state.chapterProgress =
+      this.clamp(
+        this.state.chapterProgress + 10,
+        0,
+        100
+      );
 
     this.updateStuckLevelFromProgress();
     this.save();
 
     return {
       ok: true,
-      reward: 3,
       message:
         "Допрос дал результат. Получено 3 очка расследования."
     };
@@ -449,18 +443,18 @@ const AIEngine = {
     this.state.correctHypotheses += 1;
     this.state.investigationPoints += 4;
 
-    this.state.chapterProgress = this.clamp(
-      this.state.chapterProgress + 15,
-      0,
-      100
-    );
+    this.state.chapterProgress =
+      this.clamp(
+        this.state.chapterProgress + 15,
+        0,
+        100
+      );
 
     this.updateStuckLevelFromProgress();
     this.save();
 
     return {
       ok: true,
-      reward: 4,
       message:
         "Гипотеза подтверждена. Получено 4 очка расследования."
     };
@@ -477,14 +471,14 @@ const AIEngine = {
 
     return {
       ok: true,
-      reward: 10,
       message:
         "Верный вердикт. Получено 10 очков расследования."
     };
   },
 
   updateStuckLevelFromProgress() {
-    const progress = this.state.chapterProgress;
+    const progress =
+      this.state.chapterProgress;
 
     if (progress <= 0) {
       this.state.stuckLevel = 0;
@@ -500,11 +494,12 @@ const AIEngine = {
   },
 
   setProgress(value) {
-    const progress = this.clamp(
-      Math.floor(Number(value) || 0),
-      0,
-      100
-    );
+    const progress =
+      this.clamp(
+        Math.floor(Number(value) || 0),
+        0,
+        100
+      );
 
     this.state.chapterProgress = progress;
     this.updateStuckLevelFromProgress();
@@ -543,8 +538,11 @@ const AIEngine = {
       };
     }
 
-    const hint = this.getHintByStuckLevel();
-    const cost = this.getSoftHintCost();
+    const hint =
+      this.getHintByStuckLevel();
+
+    const cost =
+      this.getSoftHintCost();
 
     if (!this.spendInvestigationPoints(cost)) {
       return {
@@ -557,10 +555,11 @@ const AIEngine = {
     this.state.lastSoftHintAt = Date.now();
     this.state.softHintsUsed += 1;
 
-    this.state.stuckLevel = Math.min(
-      4,
-      this.state.stuckLevel + 1
-    );
+    this.state.stuckLevel =
+      Math.min(
+        4,
+        this.state.stuckLevel + 1
+      );
 
     this.state.hintHistory.unshift(
       `Мягкая (${cost} очков): ${hint.text}`
@@ -580,8 +579,11 @@ const AIEngine = {
   },
 
   requestHardHint() {
-    const hint = this.getHintByStuckLevel();
-    const cost = this.getHardHintCost();
+    const hint =
+      this.getHintByStuckLevel();
+
+    const cost =
+      this.getHardHintCost();
 
     if (!this.spendInvestigationPoints(cost)) {
       return {
@@ -593,10 +595,11 @@ const AIEngine = {
 
     this.state.hardHintsUsed += 1;
 
-    this.state.stuckLevel = Math.min(
-      4,
-      this.state.stuckLevel + 1
-    );
+    this.state.stuckLevel =
+      Math.min(
+        4,
+        this.state.stuckLevel + 1
+      );
 
     this.state.hintHistory.unshift(
       `Жёсткая (${cost} очков): ${hint.text}`
