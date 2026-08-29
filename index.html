@@ -15,7 +15,6 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-logo">TC</div>
-
         <div>
           <h1>TRUE CRIME BOT</h1>
           <p>Детективное расследование</p>
@@ -37,325 +36,222 @@
           <span>ТУПИК</span>
           <strong id="uiStuck">0</strong>
         </div>
+
+        <div class="top-stat">
+          <span>ДЕЛО</span>
+          <strong id="uiCase">001</strong>
+        </div>
       </div>
     </header>
 
-    <div class="dashboard">
+    <main class="dashboard">
 
-      <main class="main-content">
-
-        <section class="case-screen">
-          <div class="case-screen-grid"></div>
-
-          <div class="case-content">
-            <div class="case-label">
-              АКТИВНОЕ ДЕЛО · №001
-            </div>
-
-            <h2>Тайна закрытой комнаты</h2>
-
-            <p>
-              Найди противоречие в показаниях и выясни,
-              кто на самом деле был на месте преступления.
-            </p>
-
-            <div class="progress-area">
-              <div class="progress-header">
-                <span>Прогресс расследования</span>
-                <strong id="uiProgress">0%</strong>
-              </div>
-
-              <div class="progress-track">
-                <div id="chapterProgressBar" class="progress-fill"></div>
-              </div>
-            </div>
+      <section class="panel panel-case">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">СОСТАВ ДЕЛА</span>
+            <h2>Выбери преступника</h2>
           </div>
-        </section>
+          <div class="chapter-chip">ГЛАВА <b id="chapterBadge">1</b></div>
+        </div>
 
-        <section class="panel actions-panel">
-          <div class="panel-header">
-            <div>
-              <span class="eyebrow">ИГРОВОЙ ПРОЦЕСС</span>
-              <h2>Выбери действие</h2>
-            </div>
+        <div class="case-story">
+          <h3>Дело №001 — Тайна закрытой комнаты</h3>
+          <p>
+            На месте преступления найдено две улики, а у двоих подозреваемых разные версии событий.
+            Выбери главного подозреваемого, чтобы направить расследование.
+          </p>
+        </div>
 
-            <div class="chapter-chip">
-              ГЛАВА <b id="chapterBadge">1</b>
-            </div>
-          </div>
-
-          <div class="action-grid">
-
-            <button id="findClueBtn" class="action-card action-blue" type="button">
-              <span class="action-icon">⌕</span>
-              <span class="action-title">Искать улики</span>
-              <span class="action-text">
-                Осмотри место преступления
-              </span>
-              <span class="action-reward">
-                +2 очка · +10% прогресса
-              </span>
-            </button>
-
-            <button id="successfulQuestionBtn" class="action-card action-green" type="button">
-              <span class="action-icon">?</span>
-              <span class="action-title">Допросить свидетеля</span>
-              <span class="action-text">
-                Проверь показания
-              </span>
-              <span class="action-reward">
-                +3 очка · +10% прогресса
-              </span>
-            </button>
-
-            <button id="correctHypothesisBtn" class="action-card action-purple" type="button">
-              <span class="action-icon">◈</span>
-              <span class="action-title">Проверить гипотезу</span>
-              <span class="action-text">
-                Сопоставь факты дела
-              </span>
-              <span class="action-reward">
-                +4 очка · +15% прогресса
-              </span>
-            </button>
-
-            <button id="correctVerdictBtn" class="action-card action-gold" type="button">
-              <span class="action-icon">✓</span>
-              <span class="action-title">Вынести вердикт</span>
-              <span class="action-text">
-                Заверши расследование
-              </span>
-              <span class="action-reward">
-                +10 очков · глава завершена
-              </span>
-            </button>
-
-          </div>
-
-          <div id="gameMessage" class="game-message">
-            Игра готова. Начни расследование.
-          </div>
-        </section>
-
-        <section class="panel board-panel">
-          <div class="panel-header">
-            <div>
-              <span class="eyebrow">ДОСКА ДЕЛА</span>
-              <h2>Улики и подозреваемые</h2>
-            </div>
-
-            <div class="object-count">
-              4 объекта
-            </div>
-          </div>
-
-          <div id="evidenceBoard" class="evidence-grid">
-
-            <article class="evidence-card board-clue">
-              <div class="evidence-header">
-                <span>УЛИКА</span>
-                <b>01</b>
-              </div>
-
-              <h3>Улика A</h3>
-
-              <p>
-                След, найденный на месте преступления.
-              </p>
-
-              <div class="card-line"></div>
-            </article>
-
-            <article class="evidence-card board-clue">
-              <div class="evidence-header">
-                <span>УЛИКА</span>
-                <b>02</b>
-              </div>
-
-              <h3>Улика B</h3>
-
-              <p>
-                Несовпадение во временной линии.
-              </p>
-
-              <div class="card-line"></div>
-            </article>
-
-            <article class="evidence-card board-suspect">
-              <div class="evidence-header">
-                <span>ПОДОЗРЕВАЕМЫЙ</span>
-                <b>03</b>
-              </div>
-
-              <h3>Подозреваемый 1</h3>
-
-              <p>
-                Алиби требует дополнительной проверки.
-              </p>
-
-              <div class="card-line"></div>
-            </article>
-
-            <article class="evidence-card board-suspect">
-              <div class="evidence-header">
-                <span>ПОДОЗРЕВАЕМЫЙ</span>
-                <b>04</b>
-              </div>
-
-              <h3>Подозреваемый 2</h3>
-
-              <p>
-                Мотив пока не подтверждён.
-              </p>
-
-              <div class="card-line"></div>
-            </article>
-
-          </div>
-        </section>
-
-      </main>
-
-      <aside class="sidebar">
-
-        <section class="panel hint-panel">
-          <div class="panel-header">
-            <div>
-              <span class="eyebrow">ПОМОЩЬ СИСТЕМЫ</span>
-              <h2>Подсказки</h2>
-            </div>
-
-            <span class="online-status">
-              <i></i> ONLINE
+        <div class="suspect-grid" id="suspectGrid">
+          <button class="suspect-card selected" data-suspect="suspect-a" type="button">
+            <span class="suspect-top">
+              <b>ПОДОЗРЕВАЕМЫЙ 1</b>
+              <i>основной</i>
             </span>
+            <h3>Алексей Морозов</h3>
+            <p>Алиби неполное. Виделся с жертвой за час до инцидента.</p>
+          </button>
+
+          <button class="suspect-card" data-suspect="suspect-b" type="button">
+            <span class="suspect-top">
+              <b>ПОДОЗРЕВАЕМЫЙ 2</b>
+              <i>альтернатива</i>
+            </span>
+            <h3>Марина Логинова</h3>
+            <p>Говорит, что была дома, но показания расходятся по времени.</p>
+          </button>
+
+          <button class="suspect-card" data-suspect="suspect-c" type="button">
+            <span class="suspect-top">
+              <b>ПОДОЗРЕВАЕМЫЙ 3</b>
+              <i>свидетель</i>
+            </span>
+            <h3>Игорь Белый</h3>
+            <p>Знал жертву, но прямой связи с местом преступления нет.</p>
+          </button>
+        </div>
+
+        <div class="case-footer">
+          <div class="case-meta">
+            <span>Активный подозреваемый:</span>
+            <strong id="activeSuspectText">Алексей Морозов</strong>
           </div>
-
-          <div class="ai-message">
-            <div class="ai-avatar">AI</div>
-
-            <p>
-              Подсказка поможет продвинуться,
-              но будет стоить очков расследования.
-            </p>
+          <div class="case-meta">
+            <span>Цель:</span>
+            <strong>найти противоречие в показаниях</strong>
           </div>
+        </div>
+      </section>
 
-          <div class="hint-prices">
+      <section class="panel panel-actions">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">ИГРОВОЙ ПРОЦЕСС</span>
+            <h2>Действия игрока</h2>
+          </div>
+        </div>
 
-            <div class="hint-price soft-price">
-              <div>
-                <span>МЯГКАЯ</span>
-                <small>Общее направление</small>
-              </div>
+        <div class="action-grid">
+          <button id="findClueBtn" class="action-card action-blue" type="button">
+            <span class="action-icon">⌕</span>
+            <span class="action-title">Искать улики</span>
+            <span class="action-text">Осмотри место преступления</span>
+            <span class="action-reward">+2 очка · +10% прогресса</span>
+          </button>
 
-              <strong>
-                <b id="softCostText">5</b>
-                <small>ОЧКОВ</small>
-              </strong>
+          <button id="successfulQuestionBtn" class="action-card action-green" type="button">
+            <span class="action-icon">?</span>
+            <span class="action-title">Допросить свидетеля</span>
+            <span class="action-text">Проверь показания</span>
+            <span class="action-reward">+3 очка · +10% прогресса</span>
+          </button>
+
+          <button id="correctHypothesisBtn" class="action-card action-purple" type="button">
+            <span class="action-icon">◈</span>
+            <span class="action-title">Проверить гипотезу</span>
+            <span class="action-text">Сопоставь факты дела</span>
+            <span class="action-reward">+4 очка · +15% прогресса</span>
+          </button>
+
+          <button id="correctVerdictBtn" class="action-card action-gold" type="button">
+            <span class="action-icon">✓</span>
+            <span class="action-title">Вынести вердикт</span>
+            <span class="action-text">Заверши расследование</span>
+            <span class="action-reward">+10 очков · глава завершена</span>
+          </button>
+        </div>
+
+        <div class="progress-box">
+          <div class="progress-header">
+            <span>Прогресс расследования</span>
+            <strong id="uiProgress">0%</strong>
+          </div>
+          <div class="progress-track">
+            <div id="chapterProgressBar" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <div id="gameMessage" class="game-message">
+          Игра готова. Начни расследование.
+        </div>
+      </section>
+
+      <section class="panel panel-board">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">ДОСКА ДЕЛА</span>
+            <h2>Улики и подсказки</h2>
+          </div>
+          <div class="object-count">4 объекта</div>
+        </div>
+
+        <div id="evidenceBoard" class="evidence-grid">
+          <article class="evidence-card board-clue">
+            <div class="evidence-header">
+              <span>УЛИКА</span><b>01</b>
             </div>
+            <h3>След у двери</h3>
+            <p>Замок был открыт изнутри, но ключ найден не был.</p>
+          </article>
 
-            <div class="hint-price hard-price">
-              <div>
-                <span>ЖЁСТКАЯ</span>
-                <small>Конкретная связь</small>
-              </div>
-
-              <strong>
-                <b id="hardCostText">15</b>
-                <small>ОЧКОВ</small>
-              </strong>
+          <article class="evidence-card board-clue">
+            <div class="evidence-header">
+              <span>УЛИКА</span><b>02</b>
             </div>
+            <h3>Запись звонка</h3>
+            <p>Звонок поступил в момент, когда подозреваемый говорил с жертвой.</p>
+          </article>
 
-          </div>
+          <article class="evidence-card board-suspect">
+            <div class="evidence-header">
+              <span>ПОДОЗРЕВАЕМЫЙ</span><b>03</b>
+            </div>
+            <h3>Алексей Морозов</h3>
+            <p>Конфликт с жертвой, алиби неполное, доступ к месту есть.</p>
+          </article>
 
-          <div id="cooldownText" class="cooldown">
-            Мягкая подсказка доступна сейчас.
-          </div>
+          <article class="evidence-card board-suspect">
+            <div class="evidence-header">
+              <span>ПОДОЗРЕВАЕМЫЙ</span><b>04</b>
+            </div>
+            <h3>Марина Логинова</h3>
+            <p>Свидетель видела её рядом с домом в подозрительное время.</p>
+          </article>
+        </div>
 
+        <div class="hint-block">
+          <div class="hint-block-title">Подсказка системы</div>
+          <p id="cooldownText">Мягкая подсказка доступна сейчас.</p>
           <div class="hint-actions">
-            <button id="softHintBtn" class="hint-btn soft-btn" type="button">
-              Мягкая
-            </button>
-
-            <button id="hardHintBtn" class="hint-btn hard-btn" type="button">
-              Жёсткая
-            </button>
+            <button id="softHintBtn" class="hint-btn soft-btn" type="button">Мягкая подсказка</button>
+            <button id="hardHintBtn" class="hint-btn hard-btn" type="button">Жёсткая подсказка</button>
           </div>
+          <div id="hintBox" class="hint-box empty-hint">Пока подсказка не запрошена.</div>
+        </div>
+      </section>
 
-          <div id="hintBox" class="hint-box empty-hint">
-            Пока подсказка не запрошена.
+      <section class="panel panel-control">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">УПРАВЛЕНИЕ</span>
+            <h2>Прогресс и история</h2>
           </div>
-        </section>
+        </div>
 
-        <section class="panel settings-panel">
-          <div class="panel-header">
-            <div>
-              <span class="eyebrow">УПРАВЛЕНИЕ</span>
-              <h2>Глава</h2>
-            </div>
-          </div>
-
-          <label class="setting-label" for="progressInput">
-            Изменить прогресс вручную
-          </label>
-
+        <div class="control-row">
+          <label for="progressInput">Изменить прогресс вручную</label>
           <div class="setting-row">
-            <input
-              id="progressInput"
-              class="progress-input"
-              type="number"
-              min="0"
-              max="100"
-              value="0"
-            >
-
-            <button id="applyProgressBtn" class="ok-btn" type="button">
-              OK
-            </button>
+            <input id="progressInput" class="progress-input" type="number" min="0" max="100" value="0">
+            <button id="applyProgressBtn" class="ok-btn" type="button">OK</button>
           </div>
-
           <button id="nextChapterBtn" class="next-btn" type="button">
             <span>Следующая глава</span>
             <b>→</b>
           </button>
-        </section>
+        </div>
 
-        <section class="panel history-panel">
-          <div class="panel-header">
-            <div>
-              <span class="eyebrow">ХРОНОЛОГИЯ</span>
-              <h2>История</h2>
-            </div>
-          </div>
-
+        <div class="history-wrap">
+          <div class="history-title">История подсказок</div>
           <div id="hintHistory" class="hint-history">
-            <div class="history-empty">
-              История подсказок пуста.
-            </div>
+            <div class="history-empty">История подсказок пуста.</div>
           </div>
-        </section>
+        </div>
 
-        <section class="panel reset-panel">
-          <button id="resetBtn" class="reset-btn" type="button">
-            Сбросить сохранение
-          </button>
+        <div class="reset-wrap">
+          <button id="resetBtn" class="reset-btn" type="button">Сбросить сохранение</button>
+          <p>Прогресс автоматически сохраняется в браузере.</p>
+        </div>
+      </section>
 
-          <p>
-            Прогресс автоматически сохраняется в браузере.
-          </p>
-        </section>
-
-      </aside>
-
-    </div>
+    </main>
 
     <footer class="footer">
       TRUE CRIME BOT <span>·</span> CASE SYSTEM
     </footer>
-
   </div>
 
   <script src="./ai_engine.js"></script>
   <script src="./game.js"></script>
-
 </body>
 </html>
