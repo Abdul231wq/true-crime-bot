@@ -25,8 +25,8 @@ const Game = {
     this.elements.uiStuck =
       document.getElementById("uiStuck");
 
-    this.elements.progressLabel =
-      document.getElementById("progressLabel");
+    this.elements.chapterBadge =
+      document.getElementById("chapterBadge");
 
     this.elements.progressInput =
       document.getElementById("progressInput");
@@ -63,14 +63,14 @@ const Game = {
     document
       .getElementById("applyProgressBtn")
       .addEventListener("click", () => {
-        const value =
-          this.elements.progressInput.value;
-
         const result =
-          AIEngine.setProgress(value);
+          AIEngine.setProgress(
+            this.elements.progressInput.value
+          );
 
         this.showMessage(
-          `Прогресс установлен: ${result.progress}%.`
+          `Прогресс установлен: ${result.progress}%.`,
+          "success"
         );
 
         this.syncAll();
@@ -82,10 +82,9 @@ const Game = {
         const result =
           AIEngine.advanceChapter();
 
-        this.elements.progressInput.value = 0;
-
         this.showMessage(
-          `Начата глава ${result.chapter}.`
+          `Начата глава ${result.chapter}.`,
+          "success"
         );
 
         this.syncAll();
@@ -113,7 +112,11 @@ const Game = {
         const result =
           AIEngine.addClue();
 
-        this.showMessage(result.message);
+        this.showMessage(
+          result.message,
+          "success"
+        );
+
         this.syncAll();
       });
 
@@ -123,7 +126,11 @@ const Game = {
         const result =
           AIEngine.successfulQuestion();
 
-        this.showMessage(result.message);
+        this.showMessage(
+          result.message,
+          "success"
+        );
+
         this.syncAll();
       });
 
@@ -133,7 +140,11 @@ const Game = {
         const result =
           AIEngine.correctHypothesis();
 
-        this.showMessage(result.message);
+        this.showMessage(
+          result.message,
+          "success"
+        );
+
         this.syncAll();
       });
 
@@ -143,16 +154,21 @@ const Game = {
         const result =
           AIEngine.correctVerdict();
 
-        this.showMessage(result.message);
+        this.showMessage(
+          result.message,
+          "success"
+        );
+
         this.syncAll();
       });
 
     document
       .getElementById("resetBtn")
       .addEventListener("click", () => {
-        const confirmed = window.confirm(
-          "Сбросить весь прогресс игры?"
-        );
+        const confirmed =
+          window.confirm(
+            "Сбросить весь прогресс игры?"
+          );
 
         if (!confirmed) {
           return;
@@ -161,7 +177,8 @@ const Game = {
         AIEngine.reset();
 
         this.showMessage(
-          "Сохранение сброшено."
+          "Сохранение сброшено.",
+          "warning"
         );
 
         this.syncAll();
@@ -172,19 +189,15 @@ const Game = {
     if (!result.ok) {
       if (result.reason === "cooldown") {
         this.showMessage(
-          `Мягкая подсказка будет доступна через ${result.remaining} сек.`
+          `Мягкая подсказка будет доступна через ${result.remaining} сек.`,
+          "warning"
         );
       }
 
       if (result.reason === "points") {
         this.showMessage(
-          `Недостаточно очков. Нужно ${result.cost}.`
-        );
-      }
-
-      if (result.reason === "nohint") {
-        this.showMessage(
-          "Сейчас подходящей подсказки нет."
+          `Недостаточно очков. Нужно ${result.cost}.`,
+          "danger"
         );
       }
 
@@ -198,7 +211,8 @@ const Game = {
         : "Жёсткая";
 
     this.showMessage(
-      `${hintName} подсказка использована за ${result.cost} очков.`
+      `${hintName} подсказка использована за ${result.cost} очков.`,
+      "success"
     );
 
     this.syncAll();
@@ -216,9 +230,13 @@ const Game = {
   },
 
   updateHeader() {
-    const state = AIEngine.state;
+    const state =
+      AIEngine.state;
 
     this.elements.uiChapter.textContent =
+      state.currentChapter;
+
+    this.elements.chapterBadge.textContent =
       state.currentChapter;
 
     this.elements.uiProgress.textContent =
@@ -234,9 +252,6 @@ const Game = {
   updateProgress() {
     const progress =
       AIEngine.state.chapterProgress;
-
-    this.elements.progressLabel.textContent =
-      `${progress}%`;
 
     this.elements.progressInput.value =
       progress;
@@ -259,7 +274,7 @@ const Game = {
 
     if (!hint) {
       this.elements.hintBox.className =
-        "hint-box hint-box-empty";
+        "hint-box empty-hint";
 
       this.elements.hintBox.textContent =
         "Пока подсказка не запрошена.";
@@ -282,11 +297,32 @@ const Game = {
 
     this.elements.hintHistory.replaceChildren();
 
+    if (!history.length) {
+      const empty =
+        document.createElement("div");
+
+      empty.className =
+        "history-empty";
+
+      empty.textContent =
+        "История подсказок пуста.";
+
+      this.elements.hintHistory.appendChild(
+        empty
+      );
+
+      return;
+    }
+
     history.forEach((item) => {
       const historyItem =
         document.createElement("div");
 
-      historyItem.textContent = item;
+      historyItem.className =
+        "history-item";
+
+      historyItem.textContent =
+        item;
 
       this.elements.hintHistory.appendChild(
         historyItem
@@ -304,24 +340,18 @@ const Game = {
     const hardCost =
       AIEngine.getHardHintCost();
 
-    const enoughForSoft =
-      state.investigationPoints >= softCost;
-
-    const enoughForHard =
-      state.investigationPoints >= hardCost;
-
     this.elements.softHintBtn.disabled =
       !AIEngine.canUseSoftHint() ||
-      !enoughForSoft;
+      state.investigationPoints < softCost;
 
     this.elements.hardHintBtn.disabled =
-      !enoughForHard;
+      state.investigationPoints < hardCost;
 
-    this.elements.softHintBtn.innerHTML =
-      `Мягкая подсказка <span class="button-subtitle">${softCost} очков</span>`;
+    this.elements.softHintBtn.textContent =
+      `Мягкая · ${softCost}`;
 
-    this.elements.hardHintBtn.innerHTML =
-      `Жёсткая подсказка <span class="button-subtitle">${hardCost} очков</span>`;
+    this.elements.hardHintBtn.textContent =
+      `Жёсткая · ${hardCost}`;
   },
 
   updateCooldownText() {
@@ -360,9 +390,18 @@ const Game = {
     });
   },
 
-  showMessage(message) {
+  showMessage(message, type) {
     this.elements.gameMessage.textContent =
       message;
+
+    this.elements.gameMessage.className =
+      "game-message";
+
+    if (type) {
+      this.elements.gameMessage.classList.add(
+        `is-${type}`
+      );
+    }
   }
 };
 
