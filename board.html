@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>True Crime Bot — Доска</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="is-board">
+  <div class="page-shell board-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">TC</div>
+        <div>
+          <h1>TRUE CRIME BOT</h1>
+          <p data-ui-case-label>Страница 3 — доска</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Дело</span><strong data-ui-chapter>1</strong></div>
+        <div class="stat"><span>Очки</span><strong class="tabular" data-ui-points>50</strong></div>
+        <div class="stat"><span>Жизни</span><strong class="tabular" data-ui-lives>5</strong></div>
+      </div>
+    </header>
+
+    <div class="banner" data-closed-banner hidden></div>
+
+    <main class="board-workspace">
+      <div class="cork-stage" id="corkStage">
+        <div class="cork-sizer" id="corkSizer">
+          <div class="cork" id="cork">
+            <div class="cork-wire" aria-hidden="true"></div>
+            <div class="cork-stamp" data-cork-stamp></div>
+            <svg class="cork-yarn" id="boardYarn" aria-hidden="true"></svg>
+            <div id="boardSuspects"></div>
+            <div id="boardClues"></div>
+            <div id="timeline" class="cork-timeline"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="inspector-dock">
+        <div class="inspector" id="inspector"></div>
+        <div class="card board-hints">
+          <div class="hint-head">
+            <h3>Подсказка</h3>
+            <span class="muted tabular" data-life-text>Жизней: 5 / 5</span>
+          </div>
+          <div class="tiles hint-btns">
+            <button class="btn btn-soft" data-action="softHint" type="button">Мягкая · <span data-cost-soft>5</span></button>
+            <button class="btn btn-hard" data-action="hardHint" type="button">Жёсткая · <span data-cost-hard>12</span></button>
+          </div>
+          <div id="hintBox" class="hint-slip">Подсказка появится здесь.</div>
+        </div>
+      </aside>
+    </main>
+
+    <nav class="footer-nav">
+      <a href="./index.html">Дело</a>
+      <a href="./case.html">Процесс</a>
+      <a class="active" href="./board.html">Доска</a>
+      <a href="./control.html">Управление</a>
+    </nav>
+  </div>
+  <script src="./data.js"></script>
+  <script src="./game.js"></script>
+  <script src="./ai_engine.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

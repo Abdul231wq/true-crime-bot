@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>True Crime Bot — Процесс</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">TC</div>
+        <div>
+          <h1>TRUE CRIME BOT</h1>
+          <p data-ui-case-label>Страница 2 — процесс</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Дело</span><strong data-ui-chapter>1</strong></div>
+        <div class="stat"><span>Очки</span><strong class="tabular" data-ui-points>50</strong></div>
+        <div class="stat"><span>Жизни</span><strong class="tabular" data-ui-lives>5</strong></div>
+      </div>
+    </header>
+
+    <div class="banner" data-closed-banner hidden></div>
+
+    <main class="panel">
+      <div class="page-head">
+        <div>
+          <span>Страница 2</span>
+          <h2>Игровой процесс</h2>
+        </div>
+        <button class="btn btn-outline" data-nav="./board.html" type="button">К доске</button>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px">
+          <span>Прогресс расследования</span>
+          <strong class="tabular" data-ui-progress>0%</strong>
+        </div>
+        <div class="bar"><div class="fill" data-progress-bar></div></div>
+      </div>
+
+      <section class="section">
+        <h3>Обыск</h3>
+        <p class="lead">Новая точка стоит <span data-cost-search>2</span> очка. Повтор — бесплатно. Жизни не тратятся.</p>
+        <div id="locationList" class="tiles"></div>
+      </section>
+
+      <section class="section">
+        <div class="page-head" style="margin-bottom:8px">
+          <div>
+            <h3>Допрос</h3>
+            <p class="lead">Сейчас: <span id="selectedSuspectText">—</span></p>
+          </div>
+          <div class="btn-row" id="suspectSwitch"></div>
+        </div>
+        <div id="questionList" class="tiles"></div>
+      </section>
+
+      <section class="section">
+        <h3>Очная ставка</h3>
+        <p class="lead">Предъявите найденную улику выбранному подозреваемому. Трещина в алиби возвращает 2 очка.</p>
+        <div id="confrontList" class="tiles"></div>
+      </section>
+
+      <section class="section grid-2">
+        <div>
+          <h3>Гипотезы</h3>
+          <div id="hypothesisList" class="tiles"></div>
+        </div>
+        <div>
+          <h3>Вердикт</h3>
+          <p class="lead">Ошибка снимает жизнь. Верный вердикт сразу открывает следующее дело. Обыск и допрос тратят только очки.</p>
+          <div id="verdictList" class="tiles" style="grid-template-columns:1fr"></div>
+        </div>
+      </section>
+
+      <div class="message" id="gameMessage">Игра готова. Начните расследование.</div>
+    </main>
+
+    <nav class="footer-nav">
+      <a href="./index.html">Дело</a>
+      <a class="active" href="./case.html">Процесс</a>
+      <a href="./board.html">Доска</a>
+      <a href="./control.html">Управление</a>
+    </nav>
+  </div>
+  <script src="./data.js"></script>
+  <script src="./game.js"></script>
+  <script src="./ai_engine.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

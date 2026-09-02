@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>True Crime Bot — Управление</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">TC</div>
+        <div>
+          <h1>TRUE CRIME BOT</h1>
+          <p>Страница 4 — управление</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Дело</span><strong data-ui-chapter>1</strong></div>
+        <div class="stat"><span>Очки</span><strong class="tabular" data-ui-points>50</strong></div>
+        <div class="stat"><span>Жизни</span><strong class="tabular" data-ui-lives>5</strong></div>
+      </div>
+    </header>
+
+    <div class="banner" data-closed-banner hidden></div>
+
+    <main class="panel">
+      <div class="page-head">
+        <div>
+          <span>Страница 4</span>
+          <h2>Управление и протокол</h2>
+        </div>
+        <button class="btn btn-outline" data-nav="./index.html" type="button">К делу</button>
+      </div>
+
+      <div id="rankCard" class="card" hidden></div>
+
+      <div class="card" style="margin-top:12px">
+        <h3>Архив дел</h3>
+        <div id="archiveList"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h3>Блокнот</h3>
+        <p class="lead">Факты с обыска и допроса. Доска их не дублирует столбиком.</p>
+        <div id="notebook" class="notes-row"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <label for="progressInput">Прогресс вручную</label>
+        <div style="display:flex;gap:8px">
+          <input id="progressInput" type="number" min="0" max="100" value="0">
+          <button class="btn btn-outline" data-action="saveProgress" type="button">OK</button>
+        </div>
+        <p class="muted">Служебное поле. В игре прогресс растёт от улик, допросов и очных ставок.</p>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <strong>Экономика</strong>
+        <p class="muted tabular" data-life-text>Жизней: 5 / 5</p>
+        <p class="muted">Обыск, допрос, очная ставка, гипотеза и подсказки тратят очки. Жизнь снимается только за неверный вердикт и восстанавливается раз в 90 секунд (макс. 5). Верный вердикт сразу открывает следующее дело.</p>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <p class="kicker">Хронология подсказок</p>
+        <div class="history" data-hint-history></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="btn-row">
+          <button class="btn btn-outline" data-export type="button">Скачать протокол</button>
+          <button class="btn btn-danger" data-reset type="button">Сбросить сохранение</button>
+        </div>
+      </div>
+    </main>
+
+    <nav class="footer-nav">
+      <a href="./index.html">Дело</a>
+      <a href="./case.html">Процесс</a>
+      <a href="./board.html">Доска</a>
+      <a class="active" href="./control.html">Управление</a>
+    </nav>
+  </div>
+  <script src="./data.js"></script>
+  <script src="./game.js"></script>
+  <script src="./ai_engine.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

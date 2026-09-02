@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>True Crime Bot — Дело</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">TC</div>
+        <div>
+          <h1>TRUE CRIME BOT</h1>
+          <p data-ui-case-label>D-0147 · Закрытая комната</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Дело</span><strong data-ui-chapter>1</strong></div>
+        <div class="stat"><span>Очки</span><strong class="tabular" data-ui-points>50</strong></div>
+        <div class="stat"><span>Жизни</span><strong class="tabular" data-ui-lives>5</strong></div>
+      </div>
+    </header>
+
+    <div class="banner" data-closed-banner hidden></div>
+
+    <main class="panel">
+      <div class="page-head">
+        <div>
+          <span>Страница 1</span>
+          <h2>Состав дела</h2>
+        </div>
+        <button class="btn" data-nav="./case.html" type="button">К расследованию</button>
+      </div>
+
+      <div class="grid-2">
+        <article class="card" id="caseBrief">
+          <span class="kicker">Жертва</span>
+          <h3>Загрузка…</h3>
+        </article>
+        <article class="card">
+          <span class="kicker">Фокус допроса</span>
+          <h3 id="selectedSuspectText">—</h3>
+          <p>Выбор меняет вопросы и очную ставку. Подозрение растёт от улик. Обыск и допрос тратят очки, ошибка вердикта — жизнь.</p>
+          <div data-heat></div>
+        </article>
+      </div>
+
+      <div class="grid-3" id="suspectGrid" style="margin-top:12px"></div>
+    </main>
+
+    <nav class="footer-nav">
+      <a class="active" href="./index.html">Дело</a>
+      <a href="./case.html">Процесс</a>
+      <a href="./board.html">Доска</a>
+      <a href="./control.html">Управление</a>
+    </nav>
+  </div>
+  <script src="./data.js"></script>
+  <script src="./game.js"></script>
+  <script src="./ai_engine.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
